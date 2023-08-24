@@ -8,13 +8,15 @@ var CANVAS_HEIGHT = 600;
 let lampWhite;
 let lampDark;
 let eyes;
-let monster = new Monster(randint(-100, 500), 450, 2)
 let healthBar = new StatusBar(250, 20)
 let chargeBar = new StatusBar(250, 40)
 let monsters = [];
 let evilX = 150;
 let evilY = 450;
 let speed = 4;
+let performedClicks = 0;
+let freezeClicks = false;
+let freezingTime = 0;
 
 
 let mySound;
@@ -51,6 +53,9 @@ function setup() {
 }
 
 function draw() {
+
+    freezingTime += deltaTime;
+
     if (frameCount % 1000 == 0)
         level++;
     // if (frameCount % 300 == 0)
@@ -78,21 +83,11 @@ function draw() {
         image(eyes, m.x, m.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
     });
 
-    // if (!isLight) {
-    //     // Legendary code!
-    //     // evilY = evilY - randint(1,3) + 1.1*sin(randfloat(0, 3.14)); 
-    //     // evilX = evilX + randint(1,2) - 1.1*cos(randfloat(-1.57, 1.57));
-    //     monster.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
-    // } else {
-    //     monster.goBack();
-    // }
-    // if (monster.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
-    //     healthBar.discharge()
-    // image(eyes, monster.x, monster.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
-
-
     // UI:
     if (isLight) {
+        if (freezeClicks)
+            chargeBar.color = [18, 117, 0] // #127500
+        else chargeBar.color = [85, 232, 0] // #55e800
         chargeBar.discharge()
     } else {
         chargeBar.charge()
@@ -103,7 +98,56 @@ function draw() {
 
 }
 
+function isCanvasClearOfEnemies() {
+    for (let i = 0; i < monsters.length; i++){
+        let monster = monsters[i]
+        let inX = 0 <= monster.x && monster.x <= CANVAS_WIDTH
+        let inY = 0 <= monster.y && monster.y <= CANVAS_HEIGHT
+        if (inX && inY) {
+            console.log(`monster! in: index=${i} x=${monster.x} y=${monster.y} ${monster}`)
+            return false
+        }
+    }
+    return true
+}
+
 function switchMode() {
+
+    // Delay of 3sec before player can use light again
+    if (freezeClicks && freezingTime >= 3000) {
+        freezeClicks = false;
+        freezingTime = 0;
+        console.log(`FREEZE over!`);
+    }
+
+    // Player performed to much clicks so freeze him on few frames
+    // and make light off
+    if (freezeClicks) {
+        isLight = false;
+        console.log(`NAH! FREEZING!!!`);
+        return 
+    }
+
+    // Disable clicks when enemies in the area when light is on
+    if (isLight && !isCanvasClearOfEnemies()) {
+        console.log(`ENEMIES IN SIGHT!`);
+        return;
+    }
+
+    performedClicks++;
+    // console.log(`CLICKS=${performedClicks} FREEZETIME=${freezingTime/1000}sec`)
+    if (!freezeClicks && performedClicks >= 5 && freezingTime < 5000) {
+        freezeClicks = true;
+        freezingTime = 0;
+        performedClicks = 0;
+        isLight = false;
+        console.log(`FREEZE!`)
+        return;
+    } else if (freezingTime > 5000) {
+        freezingTime = 0;
+        performedClicks = 0;
+    }
+
     isLight = !isLight
     
     if (!isLight) {
@@ -124,9 +168,6 @@ function switchMode() {
             });
         }
 
-        monster.randomizeSpawn()
-        // monster.setXY(randint(-100, 500), -20)
-        // monster.speed = 10
     }
 }
 

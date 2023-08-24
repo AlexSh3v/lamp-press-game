@@ -5,7 +5,7 @@ class StatusBar {
         this.startY = y
         this.width = 100
         this.height = 20
-        this.color = [85, 232, 0]
+        this.color = [85, 232, 0]// #55e800
     }
 
     charge() {
@@ -30,7 +30,7 @@ class StatusBar {
         stroke(isLight ? 0 : 255)
         strokeWeight(2)
         rect(this.startX, this.startY, this.width, this.height)
-        fill(this.color[0], this.color[1], this.color[2]) // #55e800
+        fill(this.color[0], this.color[1], this.color[2]) 
         rect(this.startX, this.startY, this.width*this.get_percentage(), this.height)
         pop()
     }

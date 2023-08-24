@@ -13,11 +13,11 @@ class Monster {
     let rx, ry;
     const minDelta = 1
     const maxDelta = 2
-    const edge = 0.1
+    const edge = 0.3 
     switch (randint(1, 4)) {
       case 1: // North Attack
         rx = randint(-CANVAS_WIDTH*minDelta, CANVAS_WIDTH*maxDelta)
-        ry = randint(-CANVAS_HEIGHT*minDelta, CANVAS_HEIGHT*edge)
+        ry = randint(-CANVAS_HEIGHT*minDelta, -CANVAS_HEIGHT*edge)
         break;
       case 2: // East Attack
         rx = randint(CANVAS_WIDTH*(1+edge), maxDelta*CANVAS_WIDTH)
