@@ -15,6 +15,8 @@ let solarPanel;
 let solarPanelWhiteImage;
 let solarPanelBlackImage;
 
+let millis = 0;
+
 let eyesImage;
 let healthBar = new StatusBar(250, 20)
 let chargeBar = new StatusBar(250, 40)
@@ -68,6 +70,7 @@ function setup() {
 }
 
 function draw() {
+    millis += deltaTime;
 
     freezingTime += deltaTime;
 
@@ -98,7 +101,7 @@ function draw() {
             m.goBack();
         }
         if (m.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
-            healthBar.discharge()
+            healthBar.decrease()
         image(eyesImage, m.x, m.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
     });
 
@@ -107,9 +110,9 @@ function draw() {
         if (freezeClicks)
             chargeBar.color = [18, 117, 0] // #127500
         else chargeBar.color = [85, 232, 0] // #55e800
-        chargeBar.discharge()
+        chargeBar.decrease()
     } else {
-        chargeBar.charge()
+        chargeBar.increase()
     }
 
     chargeBar.draw()
