@@ -15,11 +15,20 @@ let solarPanel;
 let solarPanelWhiteImage;
 let solarPanelBlackImage;
 
+let heartImage;
+let heatImage;
+let batteryImage;
+let battery2Image;
+
 let millis = 0;
 
 let eyesImage;
-let healthBar = new StatusBar(250, 20)
-let chargeBar = new StatusBar(250, 40)
+
+let barGroup;
+let healthBar; 
+let heatBar;
+let solarPanelChargeBar;
+
 let monsters = [];
 let evilX = 150;
 let evilY = 450;
@@ -38,6 +47,11 @@ function preload() {
    solarPanelBlackImage = loadImage('assets/pics/solar_panel_black.png')
    eyesImage = loadImage('assets/pics/evil_eyes.png');
    mySound = loadSound('assets/mus/tu.mp3');
+   heartImage = loadImage('assets/pics/heart.png')
+   batteryImage = loadImage('assets/pics/battery.png')
+   battery2Image = loadImage('assets/pics/battery2.png')
+   // TODO: add heat image
+   heatImage = undefined
 }
 
 function randint(min, max) { // min and max included 
@@ -56,7 +70,20 @@ function randbool() {
 function setup() {
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     frameRate(60);
+
+    healthBar = new StatusBar()
     healthBar.color = [232, 0, 0] // #e80000
+    heatBar = new StatusBar()
+    solarPanelChargeBar = new StatusBar()
+    solarPanelChargeBar.color = [0, 102, 255] // #0066ff
+    barGroup = new BarGroup(
+        0.01*CANVAS_WIDTH, 0.05*CANVAS_HEIGHT, 
+        [healthBar, heatBar, solarPanelChargeBar], 
+        [Mob.ico(heartImage), Mob.ico(battery2Image), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
+    )
+
+    solarPanelChargeBar = new StatusBar()
+
     mySound.setVolume(1.0); // Set sound volume   
     panner = new p5.Panner3D(); // Create a new Panner3D object   
     panner.process(mySound); // Connect the sound to the panner   
@@ -108,15 +135,16 @@ function draw() {
     // UI:
     if (isLight) {
         if (freezeClicks)
-            chargeBar.color = [18, 117, 0] // #127500
-        else chargeBar.color = [85, 232, 0] // #55e800
-        chargeBar.decrease()
+            heatBar.color = [18, 117, 0] // #127500
+        else heatBar.color = [85, 232, 0] // #55e800
+        heatBar.decrease()
     } else {
-        chargeBar.increase()
+        heatBar.increase()
     }
 
-    chargeBar.draw()
-    healthBar.draw()
+    barGroup.draw()
+    // heatBar.draw()
+    // healthBar.draw()
 
 }
 

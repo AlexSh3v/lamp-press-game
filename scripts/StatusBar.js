@@ -1,5 +1,46 @@
+
+class BarGroup {
+    constructor(startX, startY, arrOfBars, arrOfIcos) {
+
+        if (arrOfBars.length != arrOfIcos.length)
+            console.error("arrOfBars and arrOfIcons are not the same length!");
+
+        this.startX = startX  
+        this.startY = startY  
+        this.bars = arrOfBars
+        this.icos = arrOfIcos
+        this.gapX = 5
+        this.gapY = 5
+    }
+
+    draw() {
+        push()
+        let x = this.startX;
+        let y = this.startY;
+        let icoMob, bar;
+        for (let i = 0; i < this.bars.length; i++) {
+            icoMob = this.icos[i]
+            bar = this.bars[i]
+            icoMob.width = bar.height
+            icoMob.height = bar.height
+            icoMob.setXY(x, y)
+            icoMob.draw()
+            bar.setXY(x+icoMob.width + this.gapX, y-icoMob.height)
+            bar.draw()
+            y += max(icoMob.height, bar.height) + this.gapY
+        }
+        pop()
+    }
+}
+
 class StatusBar {
     constructor(x, y) {
+
+        if (x === undefined || y === undefined) {
+            x = 0
+            y = 0
+        }
+
         this.value = 100
         this.startX = x
         this.startY = y
@@ -25,6 +66,11 @@ class StatusBar {
 
         this.value = Math.min(100, this.value+1)
         this.startTimeMs = millis
+    }
+
+    setXY(x, y) {
+        this.startX = x
+        this.startY = y
     }
 
     decrease() {
