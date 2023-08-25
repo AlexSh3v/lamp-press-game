@@ -5,9 +5,17 @@ var isLight = true;
 var CANVAS_WIDTH  = 600;
 var CANVAS_HEIGHT = 600;
 
-let lampWhite;
-let lampDark;
-let eyes;
+
+// game mobs & images
+let lamp;
+let lampWhiteImage;
+let lampDarkImage;
+
+let solarPanel;
+let solarPanelWhiteImage;
+let solarPanelBlackImage;
+
+let eyesImage;
 let healthBar = new StatusBar(250, 20)
 let chargeBar = new StatusBar(250, 40)
 let monsters = [];
@@ -22,9 +30,11 @@ let freezingTime = 0;
 let mySound;
 let panner;
 function preload() {
-   lampWhite = loadImage('assets/pics/lamp_white.jpg');
-   lampDark = loadImage('assets/pics/lamp_dark.jpg');
-   eyes = loadImage('assets/pics/evil_eyes.png');
+   lampWhiteImage = loadImage('assets/pics/white_lamp.png');
+   lampDarkImage = loadImage('assets/pics/black_lamp.png');
+   solarPanelWhiteImage = loadImage('assets/pics/solar_panel_white.png')
+   solarPanelBlackImage = loadImage('assets/pics/solar_panel_black.png')
+   eyesImage = loadImage('assets/pics/evil_eyes.png');
    mySound = loadSound('assets/mus/tu.mp3');
 }
 
@@ -44,12 +54,17 @@ function randbool() {
 function setup() {
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     frameRate(60);
-    imageMode(CENTER);
     healthBar.color = [232, 0, 0] // #e80000
     mySound.setVolume(1.0); // Set sound volume   
     panner = new p5.Panner3D(); // Create a new Panner3D object   
     panner.process(mySound); // Connect the sound to the panner   
     panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
+
+    let lampX = CANVAS_WIDTH/2 - CANVAS_WIDTH/4
+    let deskY = CANVAS_HEIGHT*0.6975
+    console.log(`Desky = ${deskY}`)
+    lamp = new Mob(lampWhiteImage, lampX, deskY, CANVAS_WIDTH/2, CANVAS_HEIGHT/2)
+    solarPanel = new Mob(solarPanelWhiteImage, lampX-CANVAS_WIDTH/10, deskY, CANVAS_WIDTH/5, CANVAS_HEIGHT/5)
 }
 
 function draw() {
@@ -65,10 +80,14 @@ function draw() {
     panner.set(posX, posY, -1); // Set position of the sound using panner.set() function 
 
     background((isLight) ? 255 : 0);
-    fill((isLight) ? 0 : 255);
     // Lamp
-    image((isLight) ? lampWhite : lampDark, CANVAS_WIDTH/2, CANVAS_HEIGHT/2, CANVAS_WIDTH/2, CANVAS_HEIGHT/2,);
+    lamp.image = (isLight) ? lampDarkImage : lampWhiteImage
+    lamp.draw()
+    // Solar Panel
+    solarPanel.image = (isLight) ? solarPanelBlackImage : solarPanelWhiteImage
+    solarPanel.draw()
     // Desk
+    fill((isLight) ? 0 : 255);
     rect(0, CANVAS_HEIGHT*0.6875, CANVAS_WIDTH, CANVAS_WIDTH*0.025);
 
     // Monsters
@@ -80,7 +99,7 @@ function draw() {
         }
         if (m.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
             healthBar.discharge()
-        image(eyes, m.x, m.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
+        image(eyesImage, m.x, m.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
     });
 
     // UI:
