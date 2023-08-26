@@ -1,6 +1,6 @@
 
 const pi = 3.14159265359;
-var level = 1;
+var level 
 var isLight = true;
 var CANVAS_SIZE = 500;
 var CANVAS_WIDTH  = CANVAS_SIZE;
@@ -22,6 +22,11 @@ let heatImage;
 let batteryImage;
 let battery2Image;
 
+let weakEyesImage
+let wingsEyesImage
+let panzerEyesImage
+let batteryEyesImage
+
 let millis = 0;
 
 let eyesImage;
@@ -31,16 +36,16 @@ let healthBar;
 let heatBar;
 let solarPanelChargeBar;
 
-let monsters = [];
-let evilX = 150;
-let evilY = 450;
-let speed = 4;
 let performedClicks = 0;
 let freezeClicks = false;
 let freezingTime = 0;
 
 // Box collisions
 let lampHitLightBoxCollision = new BoxCollision(.45, .615, 0.1, 0.063)
+let weakEyesBoxCollision = new BoxCollision(0,0,0.125,0.075)
+let wingsEyesBoxCollision = new BoxCollision(0,0,0.125,0.075)
+let panzerEyesBoxCollision = new BoxCollision(0,0,0.125,0.075)
+let batteryEyesBoxCollision = new BoxCollision(0,0,0.125,0.075)
 
 let mySound;
 let panner;
@@ -54,8 +59,11 @@ function preload() {
    heartImage = loadImage('assets/pics/heart.png')
    batteryImage = loadImage('assets/pics/battery.png')
    battery2Image = loadImage('assets/pics/battery2.png')
-   // TODO: add heat image
-   heatImage = undefined
+   weakEyesImage = loadImage('assets/pics/evil_eyes.png')
+   wingsEyesImage = loadImage('assets/pics/eyes_wings.png')
+   panzerEyesImage = loadImage('assets/pics/eyes_panzer.png')
+   batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
+   heatImage = loadImage('assets/pics/thermometer.png')
 }
 
 function randint(min, max) { // min and max included 
@@ -74,22 +82,20 @@ function randbool() {
 function setup() {
     createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
     frameRate(60);
-
+    level = new Level1();
     healthBar = new StatusBar()
     healthBar.color = [232, 0, 0] // #e80000
     heatBar = new StatusBar()
     heatBar.value = 0
     heatBar.threshold = 50
-    heatBar.k = 50
     solarPanelChargeBar = new StatusBar()
     solarPanelChargeBar.color = [0, 102, 255] // #0066ff
+    solarPanelChargeBar.value = 0 
     barGroup = new BarGroup(
         0.01*CANVAS_WIDTH, 0.05*CANVAS_HEIGHT, 
         [healthBar, heatBar, solarPanelChargeBar], 
-        [Mob.ico(heartImage), Mob.ico(battery2Image), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
+        [Mob.ico(heartImage), Mob.ico(heatImage), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
     )
-
-    solarPanelChargeBar = new StatusBar()
 
     mySound.setVolume(1.0); // Set sound volume   
     panner = new p5.Panner3D(); // Create a new Panner3D object   
@@ -103,6 +109,8 @@ function setup() {
     solarPanel = new Mob(solarPanelWhiteImage, lampX-CANVAS_WIDTH/10, deskY, CANVAS_WIDTH/5, CANVAS_HEIGHT/5)
 
     setupOnClicks()
+
+    level.onMonsters(monster => monster.randomizeSpawn())
 }
 
 function setupOnClicks() {
@@ -114,8 +122,6 @@ function draw() {
 
     freezingTime += deltaTime;
 
-    if (frameCount % 1000 == 0)
-        level++;
     // if (frameCount % 300 == 0)
         // mySound.play(); // Start playing the sound      
     let posX = map(mouseX, 0, width, -1, 1); // Map mouse x position to range -1 to 1   
@@ -134,35 +140,48 @@ function draw() {
     rect(0, CANVAS_HEIGHT*0.6875, CANVAS_WIDTH, CANVAS_WIDTH*0.025);
 
     // Monsters
-    monsters.forEach(m => {
+    level.onMonsters(monster => {
         if (!isLight) {
-            if (m.scared && millis - m.startScaredMs < m.durationScaredMs) {
-                m.goBack(true, true)
+            if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
+                console.log(`[MONSTER] scared away!`);
+                monster.goBack(true, true)
             } else {
-                m.scared = false
-                m.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+                if (monster.isDefeated && !monster.isVisible()) {
+                  console.log(`[MONSTER] respawn monster`)
+                  monster.isDefeated = false
+                  return monster.randomizeSpawn() 
+                }
+                monster.scared = false
+                monster.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
             }
         } else {
-            m.goBack();
+            monster.goBack();
         }
-        if (m.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
+        if (monster.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
             healthBar.decreasePerFrame()
-        m.draw()
+        monster.draw()
     });
 
     // UI:
     if (isLight) {
+        solarPanelChargeBar.k = level.incK
+        solarPanelChargeBar.increasePerFrame()
+
         if (heatBar.isReachedMaximum) {
-            isLight = false
+            switchMode(true)
             heatBar.color = [10, 66, 0] // #0a4200
         }
         else heatBar.color = [85, 232, 0] // #55e800
+        heatBar.k = 50
         heatBar.increasePerFrame()
     } else {
+        solarPanelChargeBar.k = level.decK
+        solarPanelChargeBar.decreasePerFrame()
         if (!heatBar.isReachedMaximum) 
             heatBar.color = [85, 232, 0] // #55e800
         if (freezeClicks)
             heatBar.color = [10, 66, 0] // #0a4200
+        heatBar.k = 300
         heatBar.decreasePerFrame()
     }
 
@@ -177,33 +196,31 @@ function draw() {
 
 function debug() {
     lampHitLightBoxCollision.draw()
-    monsters.forEach(monster => {
+    level.onMonsters(monster => {
         monster.boxCollision.draw([255, 0, 0])
     });
 }
 
 function isCanvasClearOfEnemies() {
-    for (let i = 0; i < monsters.length; i++){
-        let monster = monsters[i]
-        let inX = 0 <= monster.x && monster.x <= CANVAS_WIDTH
-        let inY = 0 <= monster.y && monster.y <= CANVAS_HEIGHT
-        if (inX && inY) {
+    let isClear = true
+    level.onMonsters(monster => {
+        if (monster.isVisible()) {
             console.log(`monster! in: index=${i} x=${monster.x} y=${monster.y} ${monster}`)
-            return false
+            isClear = false
         }
-    }
-    return true
+    })
+    return isClear
 }
 
-function switchMode() {
+function switchMode(force=false) {
 
-    if (heatBar.isReachedMaximum) {
+    if (heatBar.isReachedMaximum && !force) {
         console.log(`FREEZE cause by heat!`);
         return 
     }
 
     // Delay of 3sec before player can use light again
-    if (freezeClicks && freezingTime >= 3000) {
+    if (freezeClicks && freezingTime >= 3000 && !force) {
         freezeClicks = false;
         freezingTime = 0;
         console.log(`FREEZE over!`);
@@ -211,71 +228,56 @@ function switchMode() {
 
     // Player performed to much clicks so freeze him on few frames
     // and make light off
-    if (freezeClicks) {
+    if (freezeClicks && !force) {
         isLight = false;
         console.log(`NAH! FREEZING!!!`);
         return 
     }
 
     // Disable clicks when enemies in the area when light is on
-    if (isLight && !isCanvasClearOfEnemies()) {
+    if (isLight && !isCanvasClearOfEnemies() && !force) {
         console.log(`ENEMIES IN SIGHT!`);
         return;
     }
 
-    performedClicks++;
-    // console.log(`CLICKS=${performedClicks} FREEZETIME=${freezingTime/1000}sec`)
-    if (!freezeClicks && performedClicks >= 5 && freezingTime < 5000) {
-        freezeClicks = true;
-        freezingTime = 0;
-        performedClicks = 0;
-        isLight = false;
-        console.log(`FREEZE!`)
-        return;
-    } else if (freezingTime > 5000) {
-        freezingTime = 0;
-        performedClicks = 0;
+    if (!force) {
+      performedClicks++;
+      if (!freezeClicks && performedClicks >= 5 && freezingTime < 5000) {
+          freezeClicks = true;
+          freezingTime = 0;
+          performedClicks = 0;
+          isLight = false;
+          console.log(`FREEZE!`)
+          return;
+      } else if (freezingTime > 5000) {
+          freezingTime = 0;
+          performedClicks = 0;
+      }
     }
 
     isLight = !isLight
     
     if (!isLight) {
-
-        if (2*level > monsters.length) {
-            for (let n = monsters.length; n < 2*level; n++) {
-                let m = new Monster(0,0,0)
-                m.boxCollision.onClick = () => {
-                    m.scared = true
-                    m.startScaredMs = millis
-                }
-                m.randomizeSpawn()
-                monsters.push(m)
-            }
-        } else if (2*level < monsters.length) {
-            for (let n = monsters.length; n > 2*level; n--) {
-                monsters.pop() // FIXME: check -> work?
-            }
-        } else {
-            monsters.forEach(m => {
-                m.randomizeSpawn()
-            });
-        }
-
+      level.onMonsters(monster => {
+        if (randbool())
+          monster.randomizeSpawn()
+      })
     }
 }
 
-function mouseClicked() {
-    
-    let triggered = false
-    monsters.forEach(m => {
-        if (m.boxCollision.hasCollision(mouseX, mouseY)) {
-            console.log("MONSTER BACK!");
-            m.boxCollision.onClick()
-            triggered = true
-        }
-    });
+function mousePressed() {
+  level.onMonsters(monster => {
+    if (monster.boxCollision.hasCollision(mouseX, mouseY)) {
+      console.log("MONSTER BACK!");
+      monster.boxCollision.onClick()
+      monster.isDefeated = true
+      monster.setScared()
+    }
+  });
+}
 
-    if (!triggered && lampHitLightBoxCollision.hasCollision(mouseX, mouseY)) 
+function mouseClicked() {
+    if (lampHitLightBoxCollision.hasCollision(mouseX, mouseY)) 
         lampHitLightBoxCollision.onClick()
 
 }

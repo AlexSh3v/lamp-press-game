@@ -8,6 +8,10 @@ class BoxCollision {
         this.onClick = () => {}
     }
 
+    copy() {
+        return new BoxCollision(this.rx,this.ry,this.rw,this.rh)
+    }
+
     hasCollision(x,y) {
         return (this.x() <= x && x <= this.x()+this.width())
             && (this.y() <= y && y <= this.y()+this.height())

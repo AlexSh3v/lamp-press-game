@@ -1,22 +1,31 @@
 class Monster {
-  constructor(x, y, speed) {
-    this.x = 0
-    this.y = 0
-    this.homeX = 0
-    this.homeY = 0
-    this.setXY(x, y);
-    this.speed = speed;
+  constructor(img, boxCollision) {
+    this.image = img
+    this.boxCollision = boxCollision
+    this.x = -1000
+    this.y = -1000
+    this.homeX = -1000
+    this.homeY = -1000
     this.isDefeated = false;
     this.scared = false
     this.startScaredMs = 0
     this.durationScaredMs = 1000
-    this.boxCollision = new BoxCollision(0,0,0.125,0.075)
+
+    this.fasterStepK = 1
+    this.stepK = 10
+    this.shakeK = 25
+    // this.boxCollision = new BoxCollision(0,0,0.125,0.075)
+  }
+
+  setScared() {
+    this.scared = true
+    this.startScaredMs = millis
   }
 
   randomizeSpawn() {
     let rx, ry;
-    const minDelta = 1
-    const maxDelta = 2
+    const minDelta = 0.4
+    const maxDelta = 1.2
     const edge = 0.3 
     switch (randint(1, 4)) {
       case 1: // North Attack
@@ -40,10 +49,14 @@ class Monster {
     }
     // 1 -- 400w
     // x -- 600w
-    let mnVel = Math.ceil(CANVAS_WIDTH/400)
-    this.speed = randint(mnVel, mnVel+1)
-    console.log(`[Randomized] x=${rx}, y=${ry}, speed=${this.speed}`)
+    console.log(`[Randomized] x=${rx}, y=${ry}`)
     this.setXY(rx, ry)
+  }
+
+  isVisible() {
+    let inX = 0 <= this.x && this.x <= CANVAS_WIDTH
+    let inY = 0 <= this.y && this.y <= CANVAS_HEIGHT
+    return inX && inY
   }
 
   setXY(newX, newY) {
@@ -72,7 +85,7 @@ class Monster {
     const vx = dx / distance;
     const vy = dy / distance;
 
-    const step = (faster ? CANVAS_WIDTH/50 : this.speed);
+    const step = (faster ? deltaTime/this.fasterStepK : deltaTime/this.stepK)
 
     const stepX = vx * step;
     const stepY = vy * step;
@@ -81,9 +94,9 @@ class Monster {
     var shakeX, shakeY;
 
     if (doShake) { 
-        // YOU THINK COS AMD SIN ARE USELESS!?
-        shakeX = randint(2, 3)*cos(randbool() ? a-pi/2 : a+pi/2) 
-        shakeY = randint(2, 3)*sin(randbool() ? a-pi/2 : a+pi/2)
+        // YOU THINK COSs AMD SINs ARE USELESS!?
+        shakeX = deltaTime/this.shakeK * randint(2, 3) * cos(randbool() ? a-pi/2 : a+pi/2) 
+        shakeY = deltaTime/this.shakeK * randint(2, 3) * sin(randbool() ? a-pi/2 : a+pi/2)
     } else { 
         shakeX = 0
         shakeY = 0
@@ -100,6 +113,16 @@ class Monster {
 
   draw() {
     this.boxCollision.set(this.x, this.y)
-    image(eyesImage, this.x, this.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
+    image(this.image, this.x, this.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
+  }
+}
+
+
+class WeaklyEyes extends Monster {
+  constructor() {
+    super(weakEyesImage, weakEyesBoxCollision.copy())
+    this.fasterStepK = 1
+    this.stepK = 10
+    this.shakeK = 30
   }
 }
