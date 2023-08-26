@@ -26,23 +26,23 @@ class Monster {
     let rx, ry;
     const minDelta = 0.4
     const maxDelta = 1.2
-    const edge = 0.3 
+    const edge = 0.3
     switch (randint(1, 4)) {
       case 1: // North Attack
-        rx = randint(-CANVAS_WIDTH*minDelta, CANVAS_WIDTH*maxDelta)
-        ry = randint(-CANVAS_HEIGHT*minDelta, -CANVAS_HEIGHT*edge)
+        rx = randint(-CANVAS_WIDTH * minDelta, CANVAS_WIDTH * maxDelta)
+        ry = randint(-CANVAS_HEIGHT * minDelta, -CANVAS_HEIGHT * edge)
         break;
       case 2: // East Attack
-        rx = randint(CANVAS_WIDTH*(1+edge), maxDelta*CANVAS_WIDTH)
-        ry = randint(-CANVAS_HEIGHT*minDelta, CANVAS_HEIGHT*maxDelta)
+        rx = randint(CANVAS_WIDTH * (1 + edge), maxDelta * CANVAS_WIDTH)
+        ry = randint(-CANVAS_HEIGHT * minDelta, CANVAS_HEIGHT * maxDelta)
         break;
       case 3: // South Attack
-        rx = randint(-CANVAS_WIDTH*minDelta, CANVAS_WIDTH*maxDelta)
-        ry = randint(CANVAS_HEIGHT*(1+edge), CANVAS_HEIGHT*maxDelta)
+        rx = randint(-CANVAS_WIDTH * minDelta, CANVAS_WIDTH * maxDelta)
+        ry = randint(CANVAS_HEIGHT * (1 + edge), CANVAS_HEIGHT * maxDelta)
         break;
       case 4: // West Attack
-        rx = randint(-CANVAS_HEIGHT*maxDelta, -CANVAS_HEIGHT*edge)
-        ry = randint(-CANVAS_HEIGHT*minDelta, CANVAS_HEIGHT*maxDelta)
+        rx = randint(-CANVAS_HEIGHT * maxDelta, -CANVAS_HEIGHT * edge)
+        ry = randint(-CANVAS_HEIGHT * minDelta, CANVAS_HEIGHT * maxDelta)
         break;
       default:
         break;
@@ -66,7 +66,7 @@ class Monster {
     this.homeY = newY
   }
 
-  goBack(doShake=false, faster=true) {
+  goBack(doShake = false, faster = true) {
     this.moveTo(this.homeX, this.homeY, doShake, faster)
   }
 
@@ -74,18 +74,18 @@ class Monster {
     return Math.sqrt(Math.pow(this.x - centerX, 2) + Math.pow(this.y - centerY, 2)) <= radius
   }
 
-  moveTo(destinationX, destinationY, doShake=true, faster=false) {
+  moveTo(destinationX, destinationY, doShake = true, faster = false) {
     const dx = destinationX - this.x;
     const dy = destinationY - this.y;
 
-    const a = Math.atan(dy/dx);
+    const a = Math.atan(dy / dx);
 
-    const distance = Math.sqrt(dx*dx + dy*dy);
+    const distance = Math.sqrt(dx * dx + dy * dy);
 
     const vx = dx / distance;
     const vy = dy / distance;
 
-    const step = (faster ? deltaTime/this.fasterStepK : deltaTime/this.stepK)
+    const step = (faster ? deltaTime / this.fasterStepK : deltaTime / this.stepK)
 
     const stepX = vx * step;
     const stepY = vy * step;
@@ -93,13 +93,13 @@ class Monster {
     // Shake it up, tonight! Shake it up, all night! 
     var shakeX, shakeY;
 
-    if (doShake) { 
-        // YOU THINK COSs AMD SINs ARE USELESS!?
-        shakeX = deltaTime/this.shakeK * randint(2, 3) * cos(randbool() ? a-pi/2 : a+pi/2) 
-        shakeY = deltaTime/this.shakeK * randint(2, 3) * sin(randbool() ? a-pi/2 : a+pi/2)
-    } else { 
-        shakeX = 0
-        shakeY = 0
+    if (doShake) {
+      // YOU THINK COSs AMD SINs ARE USELESS!?
+      shakeX = deltaTime / this.shakeK * randint(2, 3) * cos(randbool() ? a - pi / 2 : a + pi / 2)
+      shakeY = deltaTime / this.shakeK * randint(2, 3) * sin(randbool() ? a - pi / 2 : a + pi / 2)
+    } else {
+      shakeX = 0
+      shakeY = 0
     }
 
     this.x += stepX + shakeX;
@@ -113,7 +113,7 @@ class Monster {
 
   draw() {
     this.boxCollision.set(this.x, this.y)
-    image(this.image, this.x, this.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
+    image(this.image, this.x, this.y, 0.125 * CANVAS_WIDTH, 0.075 * CANVAS_HEIGHT)
   }
 }
 
