@@ -2,11 +2,13 @@
 const pi = 3.14159265359;
 var level = 1;
 var isLight = true;
-var CANVAS_WIDTH  = 600;
-var CANVAS_HEIGHT = 600;
+var CANVAS_SIZE = 500;
+var CANVAS_WIDTH  = CANVAS_SIZE;
+var CANVAS_HEIGHT = CANVAS_SIZE;
 
 
 // game mobs & images
+let DEBUG = true
 let lamp;
 let lampWhiteImage;
 let lampDarkImage;
@@ -37,6 +39,8 @@ let performedClicks = 0;
 let freezeClicks = false;
 let freezingTime = 0;
 
+// Box collisions
+let lampHitLightBoxCollision = new BoxCollision(.45, .615, 0.1, 0.063)
 
 let mySound;
 let panner;
@@ -74,6 +78,9 @@ function setup() {
     healthBar = new StatusBar()
     healthBar.color = [232, 0, 0] // #e80000
     heatBar = new StatusBar()
+    heatBar.value = 0
+    heatBar.threshold = 50
+    heatBar.k = 50
     solarPanelChargeBar = new StatusBar()
     solarPanelChargeBar.color = [0, 102, 255] // #0066ff
     barGroup = new BarGroup(
@@ -94,6 +101,12 @@ function setup() {
     console.log(`Desky = ${deskY}`)
     lamp = new Mob(lampWhiteImage, lampX, deskY, CANVAS_WIDTH/2, CANVAS_HEIGHT/2)
     solarPanel = new Mob(solarPanelWhiteImage, lampX-CANVAS_WIDTH/10, deskY, CANVAS_WIDTH/5, CANVAS_HEIGHT/5)
+
+    setupOnClicks()
+}
+
+function setupOnClicks() {
+    lampHitLightBoxCollision.onClick = () => { switchMode() }
 }
 
 function draw() {
@@ -123,29 +136,50 @@ function draw() {
     // Monsters
     monsters.forEach(m => {
         if (!isLight) {
-            m.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+            if (m.scared && millis - m.startScaredMs < m.durationScaredMs) {
+                m.goBack(true, true)
+            } else {
+                m.scared = false
+                m.moveTo(CANVAS_WIDTH/2, CANVAS_HEIGHT/2);
+            }
         } else {
             m.goBack();
         }
         if (m.inRadius(CANVAS_WIDTH/2, CANVAS_HEIGHT/2, 0.125*CANVAS_WIDTH))
-            healthBar.decrease()
-        image(eyesImage, m.x, m.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
+            healthBar.decreasePerFrame()
+        m.draw()
     });
 
     // UI:
     if (isLight) {
-        if (freezeClicks)
-            heatBar.color = [18, 117, 0] // #127500
+        if (heatBar.isReachedMaximum) {
+            isLight = false
+            heatBar.color = [10, 66, 0] // #0a4200
+        }
         else heatBar.color = [85, 232, 0] // #55e800
-        heatBar.decrease()
+        heatBar.increasePerFrame()
     } else {
-        heatBar.increase()
+        if (!heatBar.isReachedMaximum) 
+            heatBar.color = [85, 232, 0] // #55e800
+        if (freezeClicks)
+            heatBar.color = [10, 66, 0] // #0a4200
+        heatBar.decreasePerFrame()
     }
 
     barGroup.draw()
     // heatBar.draw()
     // healthBar.draw()
 
+
+    if (DEBUG) 
+        debug()
+}
+
+function debug() {
+    lampHitLightBoxCollision.draw()
+    monsters.forEach(monster => {
+        monster.boxCollision.draw([255, 0, 0])
+    });
 }
 
 function isCanvasClearOfEnemies() {
@@ -162,6 +196,11 @@ function isCanvasClearOfEnemies() {
 }
 
 function switchMode() {
+
+    if (heatBar.isReachedMaximum) {
+        console.log(`FREEZE cause by heat!`);
+        return 
+    }
 
     // Delay of 3sec before player can use light again
     if (freezeClicks && freezingTime >= 3000) {
@@ -205,6 +244,10 @@ function switchMode() {
         if (2*level > monsters.length) {
             for (let n = monsters.length; n < 2*level; n++) {
                 let m = new Monster(0,0,0)
+                m.boxCollision.onClick = () => {
+                    m.scared = true
+                    m.startScaredMs = millis
+                }
                 m.randomizeSpawn()
                 monsters.push(m)
             }
@@ -223,8 +266,17 @@ function switchMode() {
 
 function mouseClicked() {
     
-    if ((0 <= mouseX && mouseX <= CANVAS_WIDTH) && (0 <= mouseY && mouseY <= CANVAS_HEIGHT)) 
-        switchMode()
+    let triggered = false
+    monsters.forEach(m => {
+        if (m.boxCollision.hasCollision(mouseX, mouseY)) {
+            console.log("MONSTER BACK!");
+            m.boxCollision.onClick()
+            triggered = true
+        }
+    });
+
+    if (!triggered && lampHitLightBoxCollision.hasCollision(mouseX, mouseY)) 
+        lampHitLightBoxCollision.onClick()
 
 }
 
@@ -232,6 +284,7 @@ function keyPressed() {
     if (keyCode == 32) {// Space
         switchMode()
     }
+    if (key == "D") DEBUG = !DEBUG
 }
 
 function windowResized() {

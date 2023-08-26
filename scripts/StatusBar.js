@@ -48,7 +48,14 @@ class StatusBar {
         this.height = 20
         this.color = [85, 232, 0]// #55e800
         this.startTimeMs = 0;
-        this.isCharging = false;
+        this.isIncreasing = false;
+        this.lastValue = 0;
+        this.isReachedMaximum = false
+        this.threshold = 0
+
+        // k for constant decreasing/increasing per frame
+        // the bigger the value k the slower increse
+        this.k = 200 
     }
 
     increase() {
@@ -56,9 +63,9 @@ class StatusBar {
         // [ ] 20ms [ ]   60fps
         // [ ] 60ms [ ]   30fps
         
-        if (!this.isCharging) {
+        if (!this.isIncreasing) {
             this.startTimeMs = millis
-            this.isCharging = true
+            this.isIncreasing = true
         }
 
         if (millis - this.startTimeMs < 1500)
@@ -75,9 +82,9 @@ class StatusBar {
 
     decrease() {
         
-        if (this.isCharging) {
+        if (this.isIncreasing) {
             this.startTimeMs = millis
-            this.isCharging = false
+            this.isIncreasing = false
         }
 
         if (millis - this.startTimeMs < 500)
@@ -85,6 +92,24 @@ class StatusBar {
 
         this.value = Math.max(0, this.value-1)
         this.startTimeMs = millis
+    }
+
+    increasePerFrame() {
+        // increase value depending on time between frames
+        // it does not care about fps -- all the same
+        this.value = Math.min(100, this.value + deltaTime/this.k)
+        if (this.value == 100 && this.threshold != 0) {
+            this.isReachedMaximum = true
+        }
+    }
+    decreasePerFrame() {
+        // decrease value depending on time between frames
+        // it does not care about fps -- all the same
+        this.value = Math.max(0, this.value - deltaTime/this.k)
+
+        if (this.isReachedMaximum && this.value < this.threshold) {
+            this.isReachedMaximum = false
+        }
     }
 
     get_percentage() {
@@ -98,7 +123,8 @@ class StatusBar {
         strokeWeight(2)
         rect(this.startX, this.startY, this.width, this.height)
         fill(this.color[0], this.color[1], this.color[2]) 
-        rect(this.startX, this.startY, this.width*this.get_percentage(), this.height)
+        let w = map(this.value, 0, 100, 0, this.width)
+        rect(this.startX, this.startY, w, this.height)
         pop()
     }
 

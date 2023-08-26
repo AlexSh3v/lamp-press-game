@@ -7,6 +7,10 @@ class Monster {
     this.setXY(x, y);
     this.speed = speed;
     this.isDefeated = false;
+    this.scared = false
+    this.startScaredMs = 0
+    this.durationScaredMs = 1000
+    this.boxCollision = new BoxCollision(0,0,0.125,0.075)
   }
 
   randomizeSpawn() {
@@ -49,8 +53,8 @@ class Monster {
     this.homeY = newY
   }
 
-  goBack() {
-    this.moveTo(this.homeX, this.homeY, false, true)
+  goBack(doShake=false, faster=true) {
+    this.moveTo(this.homeX, this.homeY, doShake, faster)
   }
 
   inRadius(centerX, centerY, radius) {
@@ -92,5 +96,10 @@ class Monster {
     // evilX = evilX + randint(1,2) - 1.1*cos(randfloat(-1.57, 1.57));
 
     // console.log(`Monster moved to (${this.x}, ${this.y})`);
+  }
+
+  draw() {
+    this.boxCollision.set(this.x, this.y)
+    image(eyesImage, this.x, this.y, 0.125*CANVAS_WIDTH, 0.075*CANVAS_HEIGHT)
   }
 }
