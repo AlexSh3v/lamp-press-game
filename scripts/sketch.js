@@ -154,7 +154,8 @@ function draw() {
         monster.moveTo(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
       }
     } else {
-      monster.goBack();
+      if (!monster.isVisible())
+        monster.goBack();
     }
     if (monster.inRadius(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0.125 * CANVAS_WIDTH))
       healthBar.decreasePerFrame()
@@ -213,7 +214,7 @@ function isCanvasClearOfEnemies() {
   if (isClear)
     console.log(`Canvas Clear!`)
   else
-    console.log(`Not Clear! Monster! in: index=${i} x=${monster.x} y=${monster.y}`)
+    console.log(`Not Clear! Monster at x=${monster.x} y=${monster.y}`)
   return isClear
 }
 
