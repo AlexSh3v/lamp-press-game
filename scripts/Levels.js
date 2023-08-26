@@ -7,13 +7,16 @@ class Level {
     this.monsters = monsters
   }
   onMonsters(callback) {
-    let i = solarPanelChargeBar.value // FIXME: it should be as field in this class!
-    this.monsters.slice(0, i).forEach(callback);
-  }
-  getMonsters(v) {
-    console.log(`GET MONSTERS!!!`);
-    let i = this.getCurrentMonsterActivity(v)
-    return this.monsters.slice(0, i)
+    let stop = this.getCurrentMonsterActivity(solarPanelChargeBar.value) // FIXME: it should be as field in this class!
+    let v
+    for (let i = 0; i < stop; i++) {
+      let monster = this.monsters[i]
+      v = callback(monster)
+      if (v === undefined)
+        continue
+      if (v == "break")
+        break
+    }
   }
   getCurrentMonsterActivity(v) {
     // Shows how to use monsters array

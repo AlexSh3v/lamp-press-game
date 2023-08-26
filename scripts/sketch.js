@@ -109,7 +109,7 @@ function setup() {
 
   setupOnClicks()
 
-  level.onMonsters(monster => monster.randomizeSpawn())
+  level.onMonsters((monster) => monster.randomizeSpawn())
 
   textSize(16)
 }
@@ -141,7 +141,7 @@ function draw() {
   rect(0, CANVAS_HEIGHT * 0.6875, CANVAS_WIDTH, CANVAS_WIDTH * 0.025);
 
   // Monsters
-  level.onMonsters(monster => {
+  level.onMonsters((monster) => {
     if (!isLight) {
       if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
         monster.goBack(true, true)
@@ -154,13 +154,20 @@ function draw() {
         monster.moveTo(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
       }
     } else {
-      if (!monster.isVisible())
-        monster.goBack();
+      monster.goBack();
     }
     if (monster.inRadius(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0.125 * CANVAS_WIDTH))
       healthBar.decreasePerFrame()
     monster.draw()
   });
+
+  // Delay of 3sec before player can use light again
+  // TODO: extract freeze duration!
+  if (freezeClicks && freezingTime >= 5000) {
+    freezeClicks = false;
+    freezingTime = 0;
+    console.log(`FREEZE cause by Clicks is over!`);
+  }
 
   // UI:
   if (isLight) {
@@ -177,9 +184,9 @@ function draw() {
   } else {
     solarPanelChargeBar.k = level.decK
     solarPanelChargeBar.decreasePerFrame()
-    if (!heatBar.isReachedMaximum)
+    if (!heatBar.isReachedMaximum && !freezeClicks)
       heatBar.color = [85, 232, 0] // #55e800
-    if (freezeClicks)
+    else if (freezeClicks)
       heatBar.color = [10, 66, 0] // #0a4200
     heatBar.k = 300
     heatBar.decreasePerFrame()
@@ -199,22 +206,23 @@ function draw() {
 
 function debug() {
   lampHitLightBoxCollision.draw()
-  level.onMonsters(monster => {
+  level.onMonsters((monster) => {
     monster.boxCollision.draw([255, 0, 0])
   });
 }
 
 function isCanvasClearOfEnemies() {
   let isClear = true
-  level.onMonsters(monster => {
+  level.onMonsters((monster) => {
     if (monster.isVisible()) {
       isClear = false
+      return 'break'
     }
   })
   if (isClear)
     console.log(`Canvas Clear!`)
   else
-    console.log(`Not Clear! Monster at x=${monster.x} y=${monster.y}`)
+    console.log(`Not Clear! Monster in sight!`)
   return isClear
 }
 
@@ -223,13 +231,6 @@ function switchMode(force = false) {
   if (heatBar.isReachedMaximum && !force) {
     console.log(`FREEZE cause by Heat!`);
     return
-  }
-
-  // Delay of 3sec before player can use light again
-  if (freezeClicks && freezingTime >= 3000 && !force) {
-    freezeClicks = false;
-    freezingTime = 0;
-    console.log(`FREEZE cause by Clicks is over!`);
   }
 
   // Player performed to much clicks so freeze him on few frames
@@ -264,21 +265,26 @@ function switchMode(force = false) {
 
   isLight = !isLight
 
-  if (!isLight) {
-    level.onMonsters(monster => {
+  if (isLight) {
+    level.onMonsters((monster) => {
+      monster.scared = true
+    })
+  } else {
+    level.onMonsters((monster) => {
       if (randbool())
         monster.randomizeSpawn()
     })
-  }
+  } 
 }
 
 function mousePressed() {
-  level.onMonsters(monster => {
+  level.onMonsters((monster) => {
     if (monster.boxCollision.hasCollision(mouseX, mouseY)) {
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.isDefeated = true
       monster.setScared()
+      return 'break'
     }
   });
 }
