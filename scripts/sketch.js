@@ -111,6 +111,8 @@ function setup() {
     setupOnClicks()
 
     level.onMonsters(monster => monster.randomizeSpawn())
+
+    textSize(16)
 }
 
 function setupOnClicks() {
@@ -188,6 +190,9 @@ function draw() {
     barGroup.draw()
     // heatBar.draw()
     // healthBar.draw()
+
+    fill(isLight ? 0 : 255)
+    text(`Level ${level.N}`, CANVAS_WIDTH*0.85, CANVAS_HEIGHT*.05)
 
 
     if (DEBUG) 
