@@ -24,6 +24,8 @@ class Monster {
 
   randomizeSpawn() {
     let rx, ry;
+    this.scared = false
+    this.startScaredMs = 0
     const minDelta = 0.4
     const maxDelta = 1.2
     const edge = 0.3

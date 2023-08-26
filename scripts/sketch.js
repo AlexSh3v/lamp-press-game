@@ -104,7 +104,6 @@ function setup() {
 
   let lampX = CANVAS_WIDTH / 2 - CANVAS_WIDTH / 4
   let deskY = CANVAS_HEIGHT * 0.6975
-  console.log(`Desky = ${deskY}`)
   lamp = new Mob(lampWhiteImage, lampX, deskY, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
   solarPanel = new Mob(solarPanelWhiteImage, lampX - CANVAS_WIDTH / 10, deskY, CANVAS_WIDTH / 5, CANVAS_HEIGHT / 5)
 
@@ -145,12 +144,10 @@ function draw() {
   level.onMonsters(monster => {
     if (!isLight) {
       if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
-        console.log(`[MONSTER] scared away!`);
         monster.goBack(true, true)
       } else {
-        if (monster.isDefeated && !monster.isVisible()) {
-          console.log(`[MONSTER] respawn monster`)
-          monster.isDefeated = false
+        if (monster.scared && !monster.isVisible()) {
+          console.log(`[MONSTER] respawning after scarying away ${monster.x} ${monster.y}`)
           return monster.randomizeSpawn()
         }
         monster.scared = false
@@ -210,17 +207,20 @@ function isCanvasClearOfEnemies() {
   let isClear = true
   level.onMonsters(monster => {
     if (monster.isVisible()) {
-      console.log(`monster! in: index=${i} x=${monster.x} y=${monster.y} ${monster}`)
       isClear = false
     }
   })
+  if (isClear)
+    console.log(`Canvas Clear!`)
+  else
+    console.log(`Not Clear! Monster! in: index=${i} x=${monster.x} y=${monster.y}`)
   return isClear
 }
 
 function switchMode(force = false) {
 
   if (heatBar.isReachedMaximum && !force) {
-    console.log(`FREEZE cause by heat!`);
+    console.log(`FREEZE cause by Heat!`);
     return
   }
 
@@ -228,31 +228,32 @@ function switchMode(force = false) {
   if (freezeClicks && freezingTime >= 3000 && !force) {
     freezeClicks = false;
     freezingTime = 0;
-    console.log(`FREEZE over!`);
+    console.log(`FREEZE cause by Clicks is over!`);
   }
 
   // Player performed to much clicks so freeze him on few frames
   // and make light off
   if (freezeClicks && !force) {
     isLight = false;
-    console.log(`NAH! FREEZING!!!`);
+    console.log(`NAH! FREEZING DUE TO CLICKS!!!`);
     return
   }
 
   // Disable clicks when enemies in the area when light is on
   if (isLight && !isCanvasClearOfEnemies() && !force) {
-    console.log(`ENEMIES IN SIGHT!`);
+    console.log(`CANNOT! ENEMIES IN SIGHT!`);
     return;
   }
 
   if (!force) {
     performedClicks++;
+    // TODO: extract `5` & `5000` from here!
     if (!freezeClicks && performedClicks >= 5 && freezingTime < 5000) {
       freezeClicks = true;
       freezingTime = 0;
       performedClicks = 0;
       isLight = false;
-      console.log(`FREEZE!`)
+      console.log(`FREEZE FUCKING NOW!`)
       return;
     } else if (freezingTime > 5000) {
       freezingTime = 0;
@@ -273,7 +274,7 @@ function switchMode(force = false) {
 function mousePressed() {
   level.onMonsters(monster => {
     if (monster.boxCollision.hasCollision(mouseX, mouseY)) {
-      console.log("MONSTER BACK!");
+      console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.isDefeated = true
       monster.setScared()
