@@ -10,6 +10,8 @@ var CANVAS_HEIGHT = CANVAS_SIZE;
 
 // game mobs & images
 let DEBUG = false
+let cursorWhite, cursorBlack, cursorDeadEye;
+let perkCursorsWhite, perkCursorsBlack;
 let lamp;
 let lampWhiteImage;
 let lampDarkImage;
@@ -37,6 +39,7 @@ let barGroup;
 let healthBar;
 let heatBar;
 let solarPanelChargeBar;
+let deadEyeBar;
 
 let performedClicks = 0;
 let freezeClicks = false;
@@ -68,20 +71,12 @@ function preload() {
   batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
   thermometorWhite = loadImage('assets/pics/thermometer_white.png')
   thermometorBlack = loadImage('assets/pics/thermometer_black.png')
+  cursorWhite = loadImage('assets/pics/cursor_white.png')
+  cursorBlack = loadImage('assets/pics/cursor_black.png')
+  cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
+  perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
+  perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
 }
-
-function randint(min, max) { // min and max included 
-  return Math.floor(Math.random() * (max - min + 1) + min)
-}
-
-function randfloat(min, max) {
-  return Math.random() * (max - min + 1) + min;
-}
-
-function randbool() {
-  return randint(0, 1) == 1;
-}
-
 
 function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -96,10 +91,17 @@ function setup() {
   solarPanelChargeBar = new StatusBar()
   solarPanelChargeBar.color = [0, 102, 255] // #0066ff
   solarPanelChargeBar.value = 0
+  deadEyeBar = new StatusBar()
+  deadEyeBar.value = 0
   barGroup = new BarGroup(
     0.03 * CANVAS_WIDTH, 0.95 * CANVAS_HEIGHT,
-    [healthBar, heatBar, solarPanelChargeBar],
-    [Mob.dico(heartBlackImage, heartWhiteImage), Mob.dico(thermometorBlack, thermometorWhite), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
+    [healthBar, heatBar, solarPanelChargeBar, deadEyeBar],
+    [
+      Mob.dico(heartBlackImage, heartWhiteImage), 
+      Mob.dico(thermometorBlack, thermometorWhite), 
+      Mob.dico(solarPanelBlackImage, solarPanelWhiteImage),
+      Mob.dico(perkCursorsBlack, perkCursorsWhite)
+    ]
   )
   barGroup.icoSize = 35
   barGroup.gapX = 30 
@@ -125,32 +127,8 @@ function setupOnClicks() {
   lampHitLightBoxCollision.onClick = () => { switchMode() }
 }
 
-function draw() {
-  millis += deltaTime;
-
+function drawGameOver() {
   if (solarPanelChargeBar.value == 100) {
-    if(isGameOver) {
-      push()
-      noFill();
-      stroke(255);
-      strokeWeight(5);
-      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2)
-      arc(
-        CANVAS_WIDTH*0.5, CANVAS_HEIGHT*0.6, 
-        0.1*CANVAS_WIDTH, 0.1*CANVAS_HEIGHT, -PI/2, v, OPEN
-      )
-      pop()
-      if (millis - gameOverStartMs < 3000) {
-        return
-      }
-      push()
-      fill(255)
-      textSize(18)
-      textAlign(CENTER)
-      text(`Нажим, чтобы начать следующий уровень!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
-      pop()
-      return
-    }
     background(0,0,0, 200)
     push()
     fill(255)
@@ -158,47 +136,70 @@ function draw() {
     textAlign(CENTER)
     text(`Ты победил Уровень ${level.N}!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
     pop()
-    isGameOver = true
-    gameOverStartMs = millis
-    return
-  }
-
-  if (healthBar.value == 0) {
     if(isGameOver) {
       push()
       noFill();
       stroke(255);
       strokeWeight(5);
-      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2)
+      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2, true)
       arc(
         CANVAS_WIDTH*0.5, CANVAS_HEIGHT*0.6, 
         0.1*CANVAS_WIDTH, 0.1*CANVAS_HEIGHT, -PI/2, v, OPEN
       )
       pop()
       if (millis - gameOverStartMs < 3000) {
-        return
+        return false
       }
       push()
       textSize(18)
       textAlign(CENTER)
-      text(`Нажим, чтобы начать заново!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
+      text(`Нажми, чтобы начать следующий уровень!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
       pop()
-      return
+      return false
     }
+    isGameOver = true
+    gameOverStartMs = millis
+    return false
+  }
+
+  if (healthBar.value == 0) {
     background(0,0,0, 150)
     push()
+    fill(255)
     textSize(48)
     textAlign(CENTER)
     text(`Ты проиграл!)`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
     pop()
+    if(isGameOver) {
+      push()
+      noFill();
+      stroke(255);
+      strokeWeight(5);
+      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2, true)
+      arc(
+        CANVAS_WIDTH*0.5, CANVAS_HEIGHT*0.6, 
+        0.1*CANVAS_WIDTH, 0.1*CANVAS_HEIGHT, -PI/2, v, OPEN
+      )
+      pop()
+      if (millis - gameOverStartMs < 3000) {
+        return false
+      }
+      push()
+      textSize(18)
+      textAlign(CENTER)
+      text(`Нажми, чтобы начать заново!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
+      pop()
+      return false
+    }
     isGameOver = true
     gameOverStartMs = millis
-    return
+    return false
   }
 
+  return true
+}
 
-  freezingTime += deltaTime;
-
+function drawGame() {
   // if (frameCount % 300 == 0)
   // mySound.play(); // Start playing the sound      
   let posX = map(mouseX, 0, width, -1, 1); // Map mouse x position to range -1 to 1   
@@ -217,60 +218,65 @@ function draw() {
   rect(0, CANVAS_HEIGHT * 0.6875, CANVAS_WIDTH, CANVAS_WIDTH * 0.025);
 
   // Monsters
-  level.onMonsters((monster) => {
-    if (!isLight) {
-      if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
-        monster.goBack(true, true)
-      } else {
-        if (monster.scared && !monster.isVisible()) {
-          console.log(`[MONSTER] respawning after scarying away ${monster.x} ${monster.y}`)
-          return monster.randomizeSpawn()
+  if (!isGameOver) {
+    level.onMonsters((monster) => {
+      if (!isLight) {
+        if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
+          monster.goBack(true, true)
+        } else {
+          if (monster.scared && !monster.isVisible()) {
+            console.log(`[MONSTER] respawning after scarying away ${monster.x} ${monster.y}`)
+            return monster.randomizeSpawn()
+          }
+          monster.scared = false
+          monster.moveTo(lamp.x+0.4*lamp.width, lamp.y - 0.2*lamp.height);
         }
-        monster.scared = false
-        monster.moveTo(lamp.x+0.4*lamp.width, lamp.y - 0.2*lamp.height);
+      } else {
+        monster.goBack();
       }
+      if (monster.inRadius(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0.125 * CANVAS_WIDTH))
+        healthBar.decreasePerFrame()
+      monster.draw()
+    });
+
+    // Delay of 3sec before player can use light again
+    // TODO: extract freeze duration!
+    if (freezeClicks && freezingTime >= 5000) {
+      freezeClicks = false;
+      freezingTime = 0;
+      console.log(`FREEZE cause by Clicks is over!`);
+    }
+  }
+}
+
+function drawGameUI() {
+  if (!isGameOver) {
+    if (isLight) {
+      solarPanelChargeBar.k = level.incK
+      solarPanelChargeBar.increasePerFrame()
+
+      if (heatBar.isReachedMaximum) {
+        switchMode(true)
+        heatBar.color = [75,75,75] // #0a4200
+      }
+      else 
+        heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
+      heatBar.k = 50
+      heatBar.increasePerFrame()
     } else {
-      monster.goBack();
+      solarPanelChargeBar.k = level.decK
+      solarPanelChargeBar.decreasePerFrame()
+      if (!heatBar.isReachedMaximum && !freezeClicks)
+        heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
+      else if (freezeClicks)
+        heatBar.color = [75,75,75] // #0a4200
+      heatBar.k = 300
+      heatBar.decreasePerFrame()
     }
-    if (monster.inRadius(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0.125 * CANVAS_WIDTH))
-      healthBar.decreasePerFrame()
-    monster.draw()
-  });
 
-  // Delay of 3sec before player can use light again
-  // TODO: extract freeze duration!
-  if (freezeClicks && freezingTime >= 5000) {
-    freezeClicks = false;
-    freezingTime = 0;
-    console.log(`FREEZE cause by Clicks is over!`);
+    healthBar.color = isLight? [0,0,0] : [255,255,255]
+    solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
   }
-
-  // UI:
-  if (isLight) {
-    solarPanelChargeBar.k = level.incK
-    solarPanelChargeBar.increasePerFrame()
-
-    if (heatBar.isReachedMaximum) {
-      switchMode(true)
-      heatBar.color = [75,75,75] // #0a4200
-    }
-    else 
-      heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
-    heatBar.k = 50
-    heatBar.increasePerFrame()
-  } else {
-    solarPanelChargeBar.k = level.decK
-    solarPanelChargeBar.decreasePerFrame()
-    if (!heatBar.isReachedMaximum && !freezeClicks)
-      heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
-    else if (freezeClicks)
-      heatBar.color = [75,75,75] // #0a4200
-    heatBar.k = 300
-    heatBar.decreasePerFrame()
-  }
-
-  healthBar.color = isLight? [0,0,0] : [255,255,255]
-  solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
 
   barGroup.draw()
   // heatBar.draw()
@@ -279,10 +285,9 @@ function draw() {
   fill(isLight ? 0 : 255)
   text(`Level ${level.N}`, CANVAS_WIDTH * 0.85, CANVAS_HEIGHT * .05)
 
+}
 
-  if (DEBUG)
-    debug()
-
+function drawMainUI() {
   push()
   if (isLight)
     fill(0, 50)
@@ -291,6 +296,22 @@ function draw() {
   noStroke()
   circle(mouseX, mouseY, 50)
   pop()
+
+  cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
+}
+
+function draw() {
+  millis += deltaTime;
+  freezingTime += deltaTime;
+
+  drawGame()
+  drawGameUI()
+  drawGameOver()
+
+  if (DEBUG)
+    debug()
+
+  drawMainUI()
 }
 
 function debug() {
@@ -366,12 +387,15 @@ function switchMode(force = false) {
 }
 
 function mousePressed() {
+  if (isGameOver) 
+    return
   level.onMonsters((monster) => {
     if (monster.boxCollision.hasCollision(mouseX, mouseY)) {
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.isDefeated = true
       monster.setScared()
+      deadEyeBar.increase()
       return 'break'
     }
   });
@@ -401,6 +425,10 @@ function mouseClicked() {
     solarPanelChargeBar.value = 0
     return;
   }
+
+  if (isGameOver) 
+    return;
+
   // FIXME: check 2 rect interceptions
   let isClickable = true 
   level.onMonsters(monster => {
