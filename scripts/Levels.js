@@ -89,3 +89,83 @@ class Level3 extends Level {
     return 6
   }
 }
+class Level4 extends Level {
+  constructor() {
+    super(4, 175, 3000, [
+      new WeaklyEyes(), new PanzerEyes(),
+      new PanzerEyes(), 
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WingsEyes(), 
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    if (v < 30)
+      return 2
+    if (v < 50)
+      return 3
+    if (v < 75)
+      return 5
+    return 6
+  }
+}
+
+class Level5 extends Level {
+  constructor() {
+    super(5, 200, 3000, [
+      new WeaklyEyes(), new WeaklyEyes(),
+      new PanzerEyes(), new PanzerEyes(), 
+      new PanzerEyes(), new PanzerEyes(), 
+      new WingsEyes(), 
+      new WeaklyEyes(), new WeaklyEyes(),
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    if (v < 30)
+      return 2
+    if (v < 50)
+      return 6
+    if (v < 70)
+      return 7
+    return 9
+  }
+}
+class Level6 extends Level {
+  constructor() {
+    super(6, 225, 3000, [
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WingsEyes(), 
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    if (v < 30)
+      return 4
+    if (v < 50)
+      return 6
+    if (v < 70)
+      return 12
+    return 13
+  }
+}
+class Level7 extends Level {
+  constructor() {
+    super(7, 225, 3000, [
+      new WingsEyes(), new WingsEyes(), 
+      new WingsEyes(), 
+      new WingsEyes(), 
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    if (v < 30)
+      return 1
+    if (v < 50)
+      return 2
+    if (v < 70)
+      return 3
+    return 4
+  }
+}

@@ -406,9 +406,17 @@ function mouseClicked() {
           break;
         case 2: level = new Level3()
           break;
-        case 3: level = new Level1()
+        case 3: level = new Level4()
           break;
-        default:
+        case 4: level = new Level5()
+          break;
+        case 5: level = new Level6()
+          break;
+        case 6: level = new Level7()
+          break;
+        case 7: //level = new Level7()
+          break;
+        default: level = new Level1()
           break;
       }
     else level = new Level1()
@@ -445,6 +453,15 @@ function keyPressed() {
     switchMode()
   }
   if (key == "D") DEBUG = !DEBUG
+  if (key == "]") {
+    solarPanelChargeBar.value = 100
+    isGameOver = true
+  }
+  if (key == "[") {
+    solarPanelChargeBar.value = 100
+    level.N = level.N - 1
+    isGameOver = true
+  }
 }
 
 function windowResized() {
