@@ -94,7 +94,7 @@ function setup() {
   deadEyeBar = new StatusBar()
   deadEyeBar.value = 0
   barGroup = new BarGroup(
-    0.03 * CANVAS_WIDTH, 0.95 * CANVAS_HEIGHT,
+    0.03, 0.95,
     [healthBar, heatBar, solarPanelChargeBar, deadEyeBar],
     [
       Mob.dico(heartBlackImage, heartWhiteImage), 
@@ -103,18 +103,14 @@ function setup() {
       Mob.dico(perkCursorsBlack, perkCursorsWhite)
     ]
   )
-  barGroup.icoSize = 35
-  barGroup.gapX = 30 
 
   mySound.setVolume(1.0); // Set sound volume   
   panner = new p5.Panner3D(); // Create a new Panner3D object   
   panner.process(mySound); // Connect the sound to the panner   
   panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
 
-  let lampX = CANVAS_WIDTH / 2 - CANVAS_WIDTH / 4
-  let deskY = CANVAS_HEIGHT * 0.6975
-  lamp = new Mob(lampWhiteImage, lampX, deskY, CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2)
-  solarPanel = new Mob(solarPanelWhiteImage, lampX - CANVAS_WIDTH / 10, deskY, CANVAS_WIDTH / 5, CANVAS_HEIGHT / 5)
+  lamp = new Mob(lampWhiteImage, 0.25, 0.6975, 0.5, 0.5)
+  solarPanel = new Mob(solarPanelWhiteImage, 0.2, 0.6975, 0.2, 0.2)
 
   setupOnClicks()
 
@@ -152,6 +148,7 @@ function drawGameOver() {
       }
       push()
       textSize(18)
+      fill(255)
       textAlign(CENTER)
       text(`Нажми, чтобы начать следующий уровень!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
       pop()
@@ -452,5 +449,9 @@ function keyPressed() {
 
 function windowResized() {
   // TODO: resize dynamically
-  //   resizeCanvas(windowWidth, windowHeight);
+  CANVAS_SIZE = Math.min(windowWidth, 600)
+  CANVAS_WIDTH = CANVAS_SIZE
+  CANVAS_HEIGHT = CANVAS_SIZE
+  console.log(`CANVAS NOW IS ${CANVAS_SIZE}x${CANVAS_SIZE}`);
+  resizeCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
 }

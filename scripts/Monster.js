@@ -2,20 +2,30 @@ class Monster {
   constructor(img, boxCollision) {
     this.image = img
     this.boxCollision = boxCollision
-    this.x = -1000
-    this.y = -1000
-    this.homeX = -1000
-    this.homeY = -1000
+    this.rx = -100
+    this.ry = -100
+    this.rHomeX = -100
+    this.rHomeY = -100
     this.isDefeated = false;
     this.scared = false
     this.startScaredMs = 0
     this.durationScaredMs = 1000
 
+    // FIXME: make movement relative to size of canvas also!!
     this.fasterStepK = 1
     this.stepK = 10
     this.shakeK = 25
     // this.boxCollision = new BoxCollision(0,0,0.125,0.075)
   }
+
+  get x() { return this.rx * CANVAS_WIDTH }
+  set x(v) { this.rx = v/CANVAS_WIDTH }
+  get y() { return this.ry * CANVAS_WIDTH }
+  set y(v) { this.ry = v/CANVAS_HEIGHT }
+  get homeX() { return this.rHomeX * CANVAS_WIDTH }
+  set homeX(v) { this.rHomeX = v/CANVAS_WIDTH }
+  get homeY() { return this.rHomeY * CANVAS_HEIGHT }
+  set homeY(v) { this.rHomeY = v/CANVAS_HEIGHT }
 
   setScared() {
     this.scared = true

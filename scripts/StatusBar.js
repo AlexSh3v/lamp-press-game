@@ -1,19 +1,25 @@
 
 class BarGroup {
-  constructor(startX, startY, arrOfBars, arrOfIcos) {
+  constructor(rStartX, rStartY, arrOfBars, arrOfIcos) {
 
     if (arrOfBars.length != arrOfIcos.length)
       console.error("arrOfBars and arrOfIcons are not the same length!");
 
-    this.startX = startX
-    this.startY = startY
+    this.rStartX = rStartX
+    this.rStartY = rStartY
     this.bars = arrOfBars
     this.icos = arrOfIcos
-    this.gapX = 5
+    this.rGapX = 0.05
     this.gapY = 5
-    this.icoSize = 25
+    this.rIcoSize = 0.058
     this.arcSizeK = 1.6
   }
+
+  get startX() { return this.rStartX * CANVAS_WIDTH }
+  get startY() { return this.rStartY * CANVAS_HEIGHT }
+
+  get gapX() { return this.rGapX * CANVAS_WIDTH }
+  get icoSize() { return this.rIcoSize * CANVAS_SIZE }
 
   draw() {
     push()

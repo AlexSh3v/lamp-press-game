@@ -1,15 +1,25 @@
 class Mob {
-  constructor(img, x, y, width, height) {
+  constructor(img, rx, ry, rwidth, rheight) {
     // x, y coord will represent bottom left point
     // its going to be much easier because we gonna 
     // draw from the desk
     this.image = img
     this.whenDarkImag = undefined
-    this.x = x
-    this.y = y
-    this.width = width
-    this.height = height
+    this.rx = rx
+    this.ry = ry
+    this.rwidth = rwidth
+    this.rheight = rheight
   }
+
+
+  get x() { return this.rx * CANVAS_WIDTH }
+  set x(v) { this.rx = v/CANVAS_WIDTH }
+  get y() { return this.ry * CANVAS_WIDTH }
+  set y(v) { this.ry = v/CANVAS_HEIGHT }
+  get width() { return this.rwidth * CANVAS_WIDTH }
+  set width(v) { this.rwidth = v/CANVAS_WIDTH }
+  get height() { return this.rheight * CANVAS_HEIGHT }
+  set height(v) { this.rheight =  v/CANVAS_HEIGHT }
 
   static ico(img) {
     // represent UI icon
@@ -23,9 +33,9 @@ class Mob {
     return m
   }
 
-  setXY(x, y) {
-    this.x = x
-    this.y = y
+  setXY(x, yy) {
+    this.y = yy
+    this.x = x; 
   }
 
   draw() {
