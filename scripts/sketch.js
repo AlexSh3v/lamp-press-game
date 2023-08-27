@@ -2,13 +2,13 @@
 const pi = 3.14159265359;
 var level
 var isLight = true;
-var CANVAS_SIZE = 500;
+var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
 
 
 // game mobs & images
-let DEBUG = true
+let DEBUG = false
 let lamp;
 let lampWhiteImage;
 let lampDarkImage;
@@ -17,8 +17,8 @@ let solarPanel;
 let solarPanelWhiteImage;
 let solarPanelBlackImage;
 
-let heartImage;
-let heatImage;
+let heartBlackImage;
+let thermometorWhite;
 let batteryImage;
 let battery2Image;
 
@@ -56,14 +56,16 @@ function preload() {
   solarPanelBlackImage = loadImage('assets/pics/solar_panel_black.png')
   eyesImage = loadImage('assets/pics/evil_eyes.png');
   mySound = loadSound('assets/mus/tu.mp3');
-  heartImage = loadImage('assets/pics/heart.png')
+  heartBlackImage = loadImage('assets/pics/heart_black.png')
+  heartWhiteImage = loadImage('assets/pics/heart_white.png')
   batteryImage = loadImage('assets/pics/battery.png')
   battery2Image = loadImage('assets/pics/battery2.png')
   weakEyesImage = loadImage('assets/pics/evil_eyes.png')
   wingsEyesImage = loadImage('assets/pics/eyes_wings.png')
   panzerEyesImage = loadImage('assets/pics/eyes_panzer.png')
   batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
-  heatImage = loadImage('assets/pics/thermometer.png')
+  thermometorWhite = loadImage('assets/pics/thermometer_white.png')
+  thermometorBlack = loadImage('assets/pics/thermometer_black.png')
 }
 
 function randint(min, max) { // min and max included 
@@ -82,6 +84,7 @@ function randbool() {
 function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(60);
+  pixelDensity(2)
   level = new Level1();
   healthBar = new StatusBar()
   healthBar.color = [232, 0, 0] // #e80000
@@ -92,10 +95,12 @@ function setup() {
   solarPanelChargeBar.color = [0, 102, 255] // #0066ff
   solarPanelChargeBar.value = 0
   barGroup = new BarGroup(
-    0.01 * CANVAS_WIDTH, 0.05 * CANVAS_HEIGHT,
+    0.03 * CANVAS_WIDTH, 0.95 * CANVAS_HEIGHT,
     [healthBar, heatBar, solarPanelChargeBar],
-    [Mob.ico(heartImage), Mob.ico(heatImage), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
+    [Mob.dico(heartBlackImage, heartWhiteImage), Mob.dico(thermometorBlack, thermometorWhite), Mob.dico(solarPanelBlackImage, solarPanelWhiteImage)]
   )
+  barGroup.icoSize = 35
+  barGroup.gapX = 30 
 
   mySound.setVolume(1.0); // Set sound volume   
   panner = new p5.Panner3D(); // Create a new Panner3D object   
@@ -176,21 +181,25 @@ function draw() {
 
     if (heatBar.isReachedMaximum) {
       switchMode(true)
-      heatBar.color = [10, 66, 0] // #0a4200
+      heatBar.color = [75,75,75] // #0a4200
     }
-    else heatBar.color = [85, 232, 0] // #55e800
+    else 
+      heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
     heatBar.k = 50
     heatBar.increasePerFrame()
   } else {
     solarPanelChargeBar.k = level.decK
     solarPanelChargeBar.decreasePerFrame()
     if (!heatBar.isReachedMaximum && !freezeClicks)
-      heatBar.color = [85, 232, 0] // #55e800
+      heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
     else if (freezeClicks)
-      heatBar.color = [10, 66, 0] // #0a4200
+      heatBar.color = [75,75,75] // #0a4200
     heatBar.k = 300
     heatBar.decreasePerFrame()
   }
+
+  healthBar.color = isLight? [0,0,0] : [255,255,255]
+  solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
 
   barGroup.draw()
   // heatBar.draw()

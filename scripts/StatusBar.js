@@ -11,6 +11,8 @@ class BarGroup {
     this.icos = arrOfIcos
     this.gapX = 5
     this.gapY = 5
+    this.icoSize = 25
+    this.arcSizeK = 1.6
   }
 
   draw() {
@@ -21,13 +23,26 @@ class BarGroup {
     for (let i = 0; i < this.bars.length; i++) {
       icoMob = this.icos[i]
       bar = this.bars[i]
-      icoMob.width = bar.height
-      icoMob.height = bar.height
+
+      icoMob.width = this.icoSize
+      icoMob.height = this.icoSize
       icoMob.setXY(x, y)
       icoMob.draw()
-      bar.setXY(x + icoMob.width + this.gapX, y - icoMob.height)
-      bar.draw()
-      y += max(icoMob.height, bar.height) + this.gapY
+
+      // Draw Arc around ico
+      noFill();
+      stroke(bar.color[0], bar.color[1], bar.color[2]);
+      // stroke(isLight? 0 : 255);
+      // if (bar.isReachedMaximum)
+      //   stroke(11);
+      strokeWeight(5);
+      let v = map(bar.value, 0, 100, -PI/2, 3*PI/2)
+      arc(
+        icoMob.x+icoMob.width/2, icoMob.y-icoMob.height/2, 
+        icoMob.width*this.arcSizeK, icoMob.height*this.arcSizeK, -PI/2, v, OPEN
+      )
+
+      x += this.icoSize + this.gapX
     }
     pop()
   }

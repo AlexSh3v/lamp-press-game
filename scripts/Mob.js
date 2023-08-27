@@ -29,6 +29,7 @@ class Mob {
   }
 
   draw() {
+    // Drawing from bottom left point
     push()
     let img = this.image
     if (this.whenDarkImag !== undefined && !isLight)
