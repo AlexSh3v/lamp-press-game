@@ -1,6 +1,7 @@
 
 const pi = 3.14159265359;
 var level
+var isGameOver = false
 var isLight = true;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
@@ -28,6 +29,7 @@ let panzerEyesImage
 let batteryEyesImage
 
 let millis = 0;
+let gameOverStartMs = 0;
 
 let eyesImage;
 
@@ -126,6 +128,75 @@ function setupOnClicks() {
 function draw() {
   millis += deltaTime;
 
+  if (solarPanelChargeBar.value == 100) {
+    if(isGameOver) {
+      push()
+      noFill();
+      stroke(255);
+      strokeWeight(5);
+      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2)
+      arc(
+        CANVAS_WIDTH*0.5, CANVAS_HEIGHT*0.6, 
+        0.1*CANVAS_WIDTH, 0.1*CANVAS_HEIGHT, -PI/2, v, OPEN
+      )
+      pop()
+      if (millis - gameOverStartMs < 3000) {
+        return
+      }
+      push()
+      fill(255)
+      textSize(18)
+      textAlign(CENTER)
+      text(`Нажим, чтобы начать следующий уровень!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
+      pop()
+      return
+    }
+    background(0,0,0, 200)
+    push()
+    fill(255)
+    textSize(38)
+    textAlign(CENTER)
+    text(`Ты победил Уровень ${level.N}!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
+    pop()
+    isGameOver = true
+    gameOverStartMs = millis
+    return
+  }
+
+  if (healthBar.value == 0) {
+    if(isGameOver) {
+      push()
+      noFill();
+      stroke(255);
+      strokeWeight(5);
+      let v = map(millis-gameOverStartMs, 0, 3000, -PI/2, 3*PI/2)
+      arc(
+        CANVAS_WIDTH*0.5, CANVAS_HEIGHT*0.6, 
+        0.1*CANVAS_WIDTH, 0.1*CANVAS_HEIGHT, -PI/2, v, OPEN
+      )
+      pop()
+      if (millis - gameOverStartMs < 3000) {
+        return
+      }
+      push()
+      textSize(18)
+      textAlign(CENTER)
+      text(`Нажим, чтобы начать заново!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
+      pop()
+      return
+    }
+    background(0,0,0, 150)
+    push()
+    textSize(48)
+    textAlign(CENTER)
+    text(`Ты проиграл!)`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
+    pop()
+    isGameOver = true
+    gameOverStartMs = millis
+    return
+  }
+
+
   freezingTime += deltaTime;
 
   // if (frameCount % 300 == 0)
@@ -156,7 +227,7 @@ function draw() {
           return monster.randomizeSpawn()
         }
         monster.scared = false
-        monster.moveTo(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2);
+        monster.moveTo(lamp.x+0.4*lamp.width, lamp.y - 0.2*lamp.height);
       }
     } else {
       monster.goBack();
@@ -211,6 +282,15 @@ function draw() {
 
   if (DEBUG)
     debug()
+
+  push()
+  if (isLight)
+    fill(0, 50)
+  else
+    fill(255, 50)
+  noStroke()
+  circle(mouseX, mouseY, 50)
+  pop()
 }
 
 function debug() {
@@ -280,8 +360,7 @@ function switchMode(force = false) {
     })
   } else {
     level.onMonsters((monster) => {
-      if (randbool())
-        monster.randomizeSpawn()
+      monster.randomizeSpawn()
     })
   } 
 }
@@ -299,7 +378,39 @@ function mousePressed() {
 }
 
 function mouseClicked() {
-  if (lampHitLightBoxCollision.hasCollision(mouseX, mouseY))
+  if (isGameOver && millis - gameOverStartMs > 3000) {
+    if (solarPanelChargeBar.value == 100)
+      switch (level.N) {
+        case 1: level = new Level2()
+          break;
+        case 2: level = new Level3()
+          break;
+        case 3: level = new Level1()
+          break;
+        default:
+          break;
+      }
+    else level = new Level1()
+
+    isLight = true
+    performedClicks = 0
+    freezeClicks = false
+    isGameOver = false
+    healthBar.value = 100
+    heatBar.value = 0
+    solarPanelChargeBar.value = 0
+    return;
+  }
+  // FIXME: check 2 rect interceptions
+  let isClickable = true 
+  level.onMonsters(monster => {
+    if (monster.boxCollision.hasCollision(lampHitLightBoxCollision.x, lampHitLightBoxCollision.y)) {
+      console.log(`111111111111111111111111111!!!`);
+      isClickable = false
+      return 'break'
+    }
+  })
+  if (isClickable && lampHitLightBoxCollision.hasCollision(mouseX, mouseY))
     lampHitLightBoxCollision.onClick()
 
 }

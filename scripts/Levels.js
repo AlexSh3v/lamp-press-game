@@ -45,3 +45,47 @@ class Level1 extends Level {
     return 5
   }
 }
+
+class Level2 extends Level {
+  constructor() {
+    super(2, 150, 3000, [
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WingsEyes(), new WeaklyEyes(), 
+      new WeaklyEyes()
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    // --- 25 --- 35 --- --- --- 75 ---- 100
+    // 11     2                12      1
+    if (v < 20)
+      return 2
+    if (v < 35)
+      return 3
+    if (v < 75)
+      return 4
+    return 5
+  }
+}
+
+class Level3 extends Level {
+  constructor() {
+    super(3, 150, 3000, [
+      new WeaklyEyes(), new WingsEyes(),
+      new WeaklyEyes(), new WeaklyEyes(),
+      new WingsEyes(), new PanzerEyes(),
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    // --- 25 --- 35 --- --- --- 75 ---- 100
+    // 11     2                12      1
+    if (v < 10)
+      return 1
+    if (v < 15)
+      return 2
+    if (v < 40)
+      return 4
+    if (v < 60) 
+      return 5
+    return 6
+  }
+}

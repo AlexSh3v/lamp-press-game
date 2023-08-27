@@ -128,3 +128,31 @@ class WeaklyEyes extends Monster {
     this.shakeK = 30
   }
 }
+
+class WingsEyes extends Monster {
+  constructor() {
+    super(wingsEyesImage, wingsEyesBoxCollision.copy())
+    this.fasterStepK = 1
+    this.stepK = 2.5 
+    this.shakeK = 20
+  }
+}
+
+class PanzerEyes extends Monster {
+  constructor() {
+    super(panzerEyesImage, panzerEyesBoxCollision.copy())
+    this.fasterStepK = 1.5
+    this.stepK = 15
+    this.shakeK = 10
+    this.beforeScare = 0 
+  }
+  setScared() {
+    if (++this.beforeScare < 3)
+      return
+    super.setScared()
+  }
+  randomizeSpawn() {
+    this.beforeScare = 0 
+    super.randomizeSpawn()
+  }
+}
