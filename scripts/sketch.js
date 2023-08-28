@@ -3,6 +3,7 @@ const pi = 3.14159265359;
 var level
 var isGameOver = false
 var isLight = true;
+var multiCursor;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
@@ -39,7 +40,7 @@ let barGroup;
 let healthBar;
 let heatBar;
 let solarPanelChargeBar;
-let deadEyeBar;
+let multicursorBar;
 
 let performedClicks = 0;
 let freezeClicks = false;
@@ -76,12 +77,15 @@ function preload() {
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
   perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
   perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
+  multicursorBlack = loadImage('assets/pics/multicursor_black.png') 
+  multicursorWhite = loadImage('assets/pics/multicursor_white.png')
 }
 
 function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(60);
   pixelDensity(2)
+  multiCursor = new Multicursor
   level = new Level1();
   healthBar = new StatusBar()
   healthBar.color = [232, 0, 0] // #e80000
@@ -91,11 +95,17 @@ function setup() {
   solarPanelChargeBar = new StatusBar()
   solarPanelChargeBar.color = [0, 102, 255] // #0066ff
   solarPanelChargeBar.value = 0
-  deadEyeBar = new StatusBar()
-  deadEyeBar.value = 0
+  multicursorBar = new StatusBar()
+  multicursorBar.threshold = 25
+  multicursorBar.value = 0
+  multicursorBar.boxCollision = new BoxCollision()
+  multicursorBar.boxCollision.onClick = () => {
+    if (multicursorBar.value > multicursorBar.threshold || multiCursor.isActivated)
+      multiCursor.isActivated = !multiCursor.isActivated
+  } 
   barGroup = new BarGroup(
     0.03, 0.95,
-    [healthBar, heatBar, solarPanelChargeBar, deadEyeBar],
+    [healthBar, heatBar, solarPanelChargeBar, multicursorBar],
     [
       Mob.dico(heartBlackImage, heartWhiteImage), 
       Mob.dico(thermometorBlack, thermometorWhite), 
@@ -244,6 +254,17 @@ function drawGame() {
       console.log(`FREEZE cause by Clicks is over!`);
     }
   }
+
+  if (multiCursor.isActivated) {
+    multicursorBar.decreasePerFrame()
+    if (multicursorBar.value == 0)
+      multiCursor.isActivated = false
+  }
+
+  if (!multiCursor.isActivated && multicursorBar.value <= multicursorBar.threshold)  
+    multicursorBar.color = [75,75,75] // #4b4b4b
+  else
+    multicursorBar.color = isLight? [0,0,0] : [255,255,255] // #fff
 }
 
 function drawGameUI() {
@@ -294,6 +315,9 @@ function drawMainUI() {
   circle(mouseX, mouseY, 50)
   pop()
 
+  if (multiCursor.isActivated) {
+    multiCursor.draw()
+  }
   cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
 }
 
@@ -312,7 +336,14 @@ function draw() {
 }
 
 function debug() {
+  push()
+  noFill()
+  stroke(isLight?0:255)
+  strokeWeight(5)
+  circle(mouseX, mouseY, multiCursor.radius*2)
+  pop()
   lampHitLightBoxCollision.draw()
+  multicursorBar.boxCollision.draw()
   level.onMonsters((monster) => {
     monster.boxCollision.draw([255, 0, 0])
   });
@@ -387,12 +418,18 @@ function mousePressed() {
   if (isGameOver) 
     return
   level.onMonsters((monster) => {
-    if (monster.boxCollision.hasCollision(mouseX, mouseY)) {
+    let isInterceptingMulticursor = (
+      multiCursor.isActivated &&
+      hasInterception(multiCursor, monster.boxCollision)
+    )
+    if (isInterceptingMulticursor || monster.boxCollision.hasCollision(mouseX, mouseY)) {
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.isDefeated = true
       monster.setScared()
-      deadEyeBar.increase()
+      multicursorBar.increase()
+      if (isInterceptingMulticursor)
+        return
       return 'break'
     }
   });
@@ -433,6 +470,9 @@ function mouseClicked() {
 
   if (isGameOver) 
     return;
+
+  if (multicursorBar.boxCollision.hasCollision(mouseX, mouseY))
+    multicursorBar.boxCollision.onClick()
 
   // FIXME: check 2 rect interceptions
   let isClickable = true 

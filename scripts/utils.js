@@ -13,8 +13,8 @@ class BoxCollision {
   }
 
   hasCollision(x, y) {
-    return (this.x() <= x && x <= this.x() + this.width())
-      && (this.y() <= y && y <= this.y() + this.height())
+    return (this.x <= x && x <= this.x + this.width)
+      && (this.y <= y && y <= this.y + this.height)
   }
 
   set(x, y, w, h) {
@@ -26,16 +26,16 @@ class BoxCollision {
       this.rh = h / CANVAS_HEIGHT
   }
 
-  x() {
+  get x() {
     return this.rx * CANVAS_WIDTH
   }
-  y() {
+  get y() {
     return this.ry * CANVAS_HEIGHT
   }
-  width() {
+  get width() {
     return this.rw * CANVAS_WIDTH
   }
-  height() {
+  get height() {
     return this.rh * CANVAS_HEIGHT
   }
   draw(color) {
@@ -44,7 +44,7 @@ class BoxCollision {
     else stroke(color[0], color[1], color[2])
     strokeWeight(5)
     noFill()
-    rect(this.x(), this.y(), this.width(), this.height())
+    rect(this.x, this.y, this.width, this.height)
     pop()
   }
 }
@@ -61,3 +61,19 @@ function randbool() {
   return randint(0, 1) == 1;
 }
 
+function hasInterception(circle, rectangle) {
+    const circleDistanceX = Math.abs(circle.x - (rectangle.x + rectangle.width / 2));
+    const circleDistanceY = Math.abs(circle.y - (rectangle.y + rectangle.height / 2));
+
+    if (circleDistanceX > (rectangle.width / 2 + circle.radius)) return false;
+    if (circleDistanceY > (rectangle.height / 2 + circle.radius)) return false;
+
+    if (circleDistanceX <= (rectangle.width / 2)) return true;
+    if (circleDistanceY <= (rectangle.height / 2)) return true;
+
+    const cornerDistanceSq =
+      (circleDistanceX - rectangle.width / 2) ** 2 +
+      (circleDistanceY - rectangle.height / 2) ** 2;
+
+    return cornerDistanceSq <= (circle.radius ** 2);
+  }

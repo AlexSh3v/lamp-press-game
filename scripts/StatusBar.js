@@ -13,6 +13,7 @@ class BarGroup {
     this.gapY = 5
     this.rIcoSize = 0.058
     this.arcSizeK = 1.6
+    this.boxCollision = undefined
   }
 
   get startX() { return this.rStartX * CANVAS_WIDTH }
@@ -47,6 +48,14 @@ class BarGroup {
         icoMob.x+icoMob.width/2, icoMob.y-icoMob.height/2, 
         icoMob.width*this.arcSizeK, icoMob.height*this.arcSizeK, -PI/2, v, OPEN
       )
+      if (bar.boxCollision !== undefined) {
+        let w = icoMob.width
+        let h = icoMob.height
+        bar.boxCollision.set(
+          icoMob.x-w/2, icoMob.y-h-h/2, 
+          w*2,h*2
+        )
+      }
 
       x += this.icoSize + this.gapX
     }
@@ -77,6 +86,8 @@ class StatusBar {
     // k for constant decreasing/increasing per frame
     // the bigger the value k the slower increse
     this.k = 200
+
+    this.onClick = undefined
   }
 
   increase() {
