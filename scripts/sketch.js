@@ -77,8 +77,6 @@ function preload() {
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
   perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
   perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
-  multicursorBlack = loadImage('assets/pics/multicursor_black.png') 
-  multicursorWhite = loadImage('assets/pics/multicursor_white.png')
 }
 
 function setup() {
