@@ -62,7 +62,7 @@ function preload() {
   solarPanelWhiteImage = loadImage('assets/pics/solar_panel_white.png')
   solarPanelBlackImage = loadImage('assets/pics/solar_panel_black.png')
   eyesImage = loadImage('assets/pics/evil_eyes.png');
-  mySound = loadSound('assets/mus/tu.mp3');
+  // mySound = loadSound('assets/mus/tu.mp3');
   heartBlackImage = loadImage('assets/pics/heart_black.png')
   heartWhiteImage = loadImage('assets/pics/heart_white.png')
   batteryImage = loadImage('assets/pics/battery.png')
@@ -118,10 +118,10 @@ function setup() {
     ]
   )
 
-  mySound.setVolume(1.0); // Set sound volume   
-  panner = new p5.Panner3D(); // Create a new Panner3D object   
-  panner.process(mySound); // Connect the sound to the panner   
-  panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
+  // mySound.setVolume(1.0); // Set sound volume   
+  // panner = new p5.Panner3D(); // Create a new Panner3D object   
+  // panner.process(mySound); // Connect the sound to the panner   
+  // panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
 
   lamp = new Mob(lampWhiteImage, 0.25, 0.6975, 0.5, 0.5)
   solarPanel = new Mob(solarPanelWhiteImage, 0.2, 0.6975, 0.2, 0.2)
@@ -213,9 +213,9 @@ function drawGameOver() {
 function drawGame() {
   // if (frameCount % 300 == 0)
   // mySound.play(); // Start playing the sound      
-  let posX = map(mouseX, 0, width, -1, 1); // Map mouse x position to range -1 to 1   
-  let posY = map(mouseY, 0, height, -1, 1); // Map mouse y position to range -1 to 1   
-  panner.set(posX, posY, -1); // Set position of the sound using panner.set() function 
+  // let posX = map(mouseX, 0, width, -1, 1); // Map mouse x position to range -1 to 1   
+  // let posY = map(mouseY, 0, height, -1, 1); // Map mouse y position to range -1 to 1   
+  // panner.set(posX, posY, -1); // Set position of the sound using panner.set() function 
 
   background((isLight) ? 255 : 0);
   // Lamp
