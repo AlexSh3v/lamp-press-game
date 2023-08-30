@@ -7,6 +7,7 @@ var multiCursor;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
+var damageRangeCircle;
 
 
 // game mobs & images
@@ -80,6 +81,11 @@ function preload() {
 }
 
 function setup() {
+  damageRangeCircle = new Circle(0.5, 0.65, 0.1)
+  CANVAS_SIZE = Math.min(windowWidth, 800)
+  CANVAS_WIDTH = CANVAS_SIZE
+  CANVAS_HEIGHT = CANVAS_SIZE
+  console.log(`CANVAS NOW IS ${CANVAS_SIZE}x${CANVAS_SIZE}`);
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(60);
   pixelDensity(2)
@@ -239,7 +245,7 @@ function drawGame() {
       } else {
         monster.goBack();
       }
-      if (monster.inRadius(CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2, 0.125 * CANVAS_WIDTH))
+      if (damageRangeCircle.hasInterception(monster.boxCollision))
         healthBar.decreasePerFrame()
       monster.draw()
     });
@@ -299,8 +305,9 @@ function drawGameUI() {
   // healthBar.draw()
 
   fill(isLight ? 0 : 255)
+  textSize(16)
   text(`Level ${level.N}`, CANVAS_WIDTH * 0.85, CANVAS_HEIGHT * .05)
-
+  text(`${Math.round(frameRate())} FPS`, 10, 20)
 }
 
 function drawMainUI() {
@@ -339,6 +346,12 @@ function debug() {
   stroke(isLight?0:255)
   strokeWeight(5)
   circle(mouseX, mouseY, multiCursor.radius*2)
+  fill(255,0,0,50)
+  circle(
+    damageRangeCircle.x, 
+    damageRangeCircle.y, 
+    damageRangeCircle.radius*2
+  )
   pop()
   lampHitLightBoxCollision.draw()
   multicursorBar.boxCollision.draw()
@@ -504,7 +517,7 @@ function keyPressed() {
 
 function windowResized() {
   // TODO: resize dynamically
-  CANVAS_SIZE = Math.min(windowWidth, 600)
+  CANVAS_SIZE = Math.min(windowWidth, 800)
   CANVAS_WIDTH = CANVAS_SIZE
   CANVAS_HEIGHT = CANVAS_SIZE
   console.log(`CANVAS NOW IS ${CANVAS_SIZE}x${CANVAS_SIZE}`);

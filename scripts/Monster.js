@@ -143,7 +143,7 @@ class WingsEyes extends Monster {
   constructor() {
     super(wingsEyesImage, wingsEyesBoxCollision.copy())
     this.fasterStepK = 1
-    this.stepK = 2.5 
+    this.stepK = 3 
     this.shakeK = 20
   }
 }

@@ -61,6 +61,21 @@ function randbool() {
   return randint(0, 1) == 1;
 }
 
+class Circle {
+  constructor(rx,ry,rr) {
+    this.rx = rx
+    this.ry = ry
+    this.rr = rr
+  }
+  get x() { return this.rx*CANVAS_WIDTH }
+  get y() { return this.ry*CANVAS_HEIGHT }
+  get radius() { return this.rr*CANVAS_SIZE }
+
+  hasInterception(rectangle) { 
+    return hasInterception(this, rectangle)
+  }
+}
+
 function hasInterception(circle, rectangle) {
     const circleDistanceX = Math.abs(circle.x - (rectangle.x + rectangle.width / 2));
     const circleDistanceY = Math.abs(circle.y - (rectangle.y + rectangle.height / 2));
