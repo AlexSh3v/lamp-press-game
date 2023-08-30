@@ -9,6 +9,10 @@ class Mob {
     this.ry = ry
     this.rwidth = rwidth
     this.rheight = rheight
+    this._boxCollision = new BoxCollision(
+      this.rx, this.ry, 
+      this.rw, this.rh, 
+    )
   }
 
 
@@ -20,6 +24,14 @@ class Mob {
   set width(v) { this.rwidth = v/CANVAS_WIDTH }
   get height() { return this.rheight * CANVAS_HEIGHT }
   set height(v) { this.rheight =  v/CANVAS_HEIGHT }
+
+  get boxCollision() {
+    this._boxCollision.set(
+      this.x, this.y-this.height,
+      this.width, this.height
+    )
+    return this._boxCollision
+  }
 
   static ico(img) {
     // represent UI icon

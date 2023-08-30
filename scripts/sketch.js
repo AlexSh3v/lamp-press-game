@@ -3,6 +3,7 @@ const pi = 3.14159265359;
 var level
 var isGameOver = false
 var isLight = true;
+var isPaused = false;
 var multiCursor;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
@@ -17,6 +18,8 @@ let perkCursorsWhite, perkCursorsBlack;
 let lamp;
 let lampWhiteImage;
 let lampDarkImage;
+let pauseButton;
+let onLightChangeCallbacks = []
 
 let solarPanel;
 let solarPanelWhiteImage;
@@ -31,6 +34,8 @@ let weakEyesImage
 let wingsEyesImage
 let panzerEyesImage
 let batteryEyesImage
+
+let fingerprintBlackImage, fingerprintWhiteImage;
 
 let millis = 0;
 let gameOverStartMs = 0;
@@ -78,15 +83,26 @@ function preload() {
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
   perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
   perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
+  fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
+  fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
 }
 
-function setup() {
-  damageRangeCircle = new Circle(0.5, 0.65, 0.1)
-  CANVAS_SIZE = Math.min(windowWidth, 800)
+function adaptForScreen(callback) {
+  CANVAS_SIZE = Math.min(windowWidth, 600)
   CANVAS_WIDTH = CANVAS_SIZE
   CANVAS_HEIGHT = CANVAS_SIZE
-  console.log(`CANVAS NOW IS ${CANVAS_SIZE}x${CANVAS_SIZE}`);
-  createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+  console.log(`CANVAS: ${CANVAS_SIZE}x${CANVAS_SIZE}`);
+  callback(CANVAS_WIDTH, CANVAS_HEIGHT)
+} 
+
+function setup() {
+  onLightChangeCallbacks.push((theme) => {
+    cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
+  })
+  damageRangeCircle = new Circle(0.5, 0.65, 0.1)
+  
+  adaptForScreen((w, h) => { createCanvas(w, h) })
+
   frameRate(60);
   pixelDensity(2)
   multiCursor = new Multicursor()
@@ -124,6 +140,7 @@ function setup() {
   // panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
 
   lamp = new Mob(lampWhiteImage, 0.25, 0.6975, 0.5, 0.5)
+  pauseButton = new Mob(batteryImage, 0.05, 0.1, 0.1, 0.1)
   solarPanel = new Mob(solarPanelWhiteImage, 0.2, 0.6975, 0.2, 0.2)
 
   setupOnClicks()
@@ -131,6 +148,8 @@ function setup() {
   level.onMonsters((monster) => monster.randomizeSpawn())
 
   textSize(16)
+
+  callOnLightChangeCallbacks(true)
 }
 
 function setupOnClicks() {
@@ -217,6 +236,7 @@ function drawGame() {
   // let posY = map(mouseY, 0, height, -1, 1); // Map mouse y position to range -1 to 1   
   // panner.set(posX, posY, -1); // Set position of the sound using panner.set() function 
 
+  // Background screen
   background((isLight) ? 255 : 0);
   // Lamp
   lamp.image = (isLight) ? lampDarkImage : lampWhiteImage
@@ -227,9 +247,45 @@ function drawGame() {
   // Desk
   fill((isLight) ? 0 : 255);
   rect(0, CANVAS_HEIGHT * 0.6875, CANVAS_WIDTH, CANVAS_WIDTH * 0.025);
+  // Monsters 
+  level.onMonsters((monster) => { monster.draw() });
+}
 
-  // Monsters
-  if (!isGameOver) {
+function drawGameUI() {
+  // Status bar: health, heat, energy ...
+  barGroup.draw()
+  // Draw fps & level
+  fill(isLight ? 0 : 255)
+  textSize(16)
+  text(`Level ${level.N}`, CANVAS_WIDTH * 0.85, CANVAS_HEIGHT * .05)
+  text(`${Math.round(frameRate())} FPS`, 10, 20)
+  // Draw buttons
+  // pauseButton.draw()
+}
+
+function drawMainUI() {
+  // Simple circle around 
+  // push()
+  // if (isLight)
+  //   fill(0, 50)
+  // else
+  //   fill(255, 50)
+  // noStroke()
+  // circle(mouseX, mouseY, 50)
+  // pop()
+  if (multiCursor.isActivated) {
+    multiCursor.draw()
+  }
+  
+  // TODO: use image instead of cursor
+  // image(
+  //   isLight ? fingerprintBlackImage ? fingerprintWhiteImage,
+  // )
+
+}
+
+function updatePositions() {
+    // Movement of monsters
     level.onMonsters((monster) => {
       if (!isLight) {
         if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
@@ -247,83 +303,51 @@ function drawGame() {
       }
       if (damageRangeCircle.hasInterception(monster.boxCollision))
         healthBar.decreasePerFrame()
-      monster.draw()
     });
 
-    // Delay of 3sec before player can use light again
-    // TODO: extract freeze duration!
-    if (freezeClicks && freezingTime >= 5000) {
-      freezeClicks = false;
-      freezingTime = 0;
-      console.log(`FREEZE cause by Clicks is over!`);
-    }
-  }
-
+  // Actions on `Multicursor` ability
   if (multiCursor.isActivated) {
     multicursorBar.decreasePerFrame()
     if (multicursorBar.value == 0)
       multiCursor.isActivated = false
   }
-
   if (!multiCursor.isActivated && multicursorBar.value <= multicursorBar.threshold)  
     multicursorBar.color = [75,75,75] // #4b4b4b
   else
     multicursorBar.color = isLight? [0,0,0] : [255,255,255] // #fff
-}
 
-function drawGameUI() {
-  if (!isGameOver) {
-    if (isLight) {
-      solarPanelChargeBar.k = level.incK
-      solarPanelChargeBar.increasePerFrame()
-
-      if (heatBar.isReachedMaximum) {
-        switchMode(true)
-        heatBar.color = [75,75,75] // #0a4200
-      }
-      else 
-        heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
-      heatBar.k = 50
-      heatBar.increasePerFrame()
+  // Delay of 3sec before player can use light again
+  // TODO: extract freeze duration!
+  if (freezeClicks && freezingTime >= 5000) {
+    freezeClicks = false;
+    freezingTime = 0;
+    console.log(`FREEZE cause by Clicks is over!`);
+  }    
+  
+  // Bars
+  if (isLight) {
+    solarPanelChargeBar.k = level.incK
+    solarPanelChargeBar.increasePerFrame()
+    if (heatBar.isReachedMaximum) {
+      switchMode(true)
+      heatBar.color = [75,75,75] // #0a4200
     } else {
-      solarPanelChargeBar.k = level.decK
-      solarPanelChargeBar.decreasePerFrame()
-      if (!heatBar.isReachedMaximum && !freezeClicks)
-        heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
-      else if (freezeClicks)
-        heatBar.color = [75,75,75] // #0a4200
-      heatBar.k = 300
-      heatBar.decreasePerFrame()
+      heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
     }
-
-    healthBar.color = isLight? [0,0,0] : [255,255,255]
-    solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
+    heatBar.k = 50
+    heatBar.increasePerFrame()
+  } else {
+    solarPanelChargeBar.k = level.decK
+    solarPanelChargeBar.decreasePerFrame()
+    if (!heatBar.isReachedMaximum && !freezeClicks)
+      heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
+    else if (freezeClicks)
+      heatBar.color = [75,75,75] // #0a4200
+    heatBar.k = 300
+    heatBar.decreasePerFrame()
   }
-
-  barGroup.draw()
-  // heatBar.draw()
-  // healthBar.draw()
-
-  fill(isLight ? 0 : 255)
-  textSize(16)
-  text(`Level ${level.N}`, CANVAS_WIDTH * 0.85, CANVAS_HEIGHT * .05)
-  text(`${Math.round(frameRate())} FPS`, 10, 20)
-}
-
-function drawMainUI() {
-  push()
-  if (isLight)
-    fill(0, 50)
-  else
-    fill(255, 50)
-  noStroke()
-  circle(mouseX, mouseY, 50)
-  pop()
-
-  if (multiCursor.isActivated) {
-    multiCursor.draw()
-  }
-  cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
+  healthBar.color = isLight? [0,0,0] : [255,255,255]
+  solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
 }
 
 function draw() {
@@ -333,6 +357,9 @@ function draw() {
   drawGame()
   drawGameUI()
   drawGameOver()
+  if (!isGameOver && !isPaused) {
+    updatePositions()
+  }
 
   if (DEBUG)
     debug()
@@ -358,6 +385,7 @@ function debug() {
   level.onMonsters((monster) => {
     monster.boxCollision.draw([255, 0, 0])
   });
+  pauseButton.boxCollision.draw()
 }
 
 function isCanvasClearOfEnemies() {
@@ -386,6 +414,7 @@ function switchMode(force = false) {
   // and make light off
   if (freezeClicks && !force) {
     isLight = false;
+    callOnLightChangeCallbacks(false)
     console.log(`NAH! FREEZING DUE TO CLICKS!!!`);
     return
   }
@@ -404,6 +433,7 @@ function switchMode(force = false) {
       freezingTime = 0;
       performedClicks = 0;
       isLight = false;
+      callOnLightChangeCallbacks(false)
       console.log(`FREEZE FUCKING NOW!`)
       return;
     } else if (freezingTime > 5000) {
@@ -413,6 +443,7 @@ function switchMode(force = false) {
   }
 
   isLight = !isLight
+  callOnLightChangeCallbacks(isLight)
 
   if (isLight) {
     level.onMonsters((monster) => {
@@ -426,7 +457,7 @@ function switchMode(force = false) {
 }
 
 function mousePressed() {
-  if (isGameOver) 
+  if (isGameOver || isPaused) 
     return
   level.onMonsters((monster) => {
     let isInterceptingMulticursor = (
@@ -470,6 +501,7 @@ function mouseClicked() {
     else level = new Level1()
 
     isLight = true
+    callOnLightChangeCallbacks(true)
     performedClicks = 0
     freezeClicks = false
     isGameOver = false
@@ -481,6 +513,12 @@ function mouseClicked() {
 
   if (isGameOver) 
     return;
+
+  if (pauseButton.boxCollision.hasCollision(mouseX, mouseY)) {
+    // isPaused = true
+    // return;
+  }
+
 
   if (multicursorBar.boxCollision.hasCollision(mouseX, mouseY))
     multicursorBar.boxCollision.onClick()
@@ -516,10 +554,10 @@ function keyPressed() {
 }
 
 function windowResized() {
-  // TODO: resize dynamically
-  CANVAS_SIZE = Math.min(windowWidth, 800)
-  CANVAS_WIDTH = CANVAS_SIZE
-  CANVAS_HEIGHT = CANVAS_SIZE
-  console.log(`CANVAS NOW IS ${CANVAS_SIZE}x${CANVAS_SIZE}`);
-  resizeCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
+  adaptForScreen((w, h) => { resizeCanvas(w, h) })
+}
+
+function callOnLightChangeCallbacks(v) {
+  isLight = v
+  onLightChangeCallbacks.forEach(callback => { callback(v) });
 }
