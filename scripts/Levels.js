@@ -5,9 +5,14 @@ class Level {
     this.incK = incK
     this.decK = decK
     this.monsters = monsters
+    this.lastActivity = 0
   }
   onMonsters(callback) {
-    let stop = this.getCurrentMonsterActivity(solarPanelChargeBar.value) // FIXME: it should be as field in this class!
+    this.lastActivity = Math.max(
+      this.getCurrentMonsterActivity(solarPanelChargeBar.value),
+      this.lastActivity
+    )
+    let stop = this.lastActivity 
     let v
     for (let i = 0; i < stop; i++) {
       let monster = this.monsters[i]

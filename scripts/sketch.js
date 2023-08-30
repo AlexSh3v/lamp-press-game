@@ -89,7 +89,7 @@ function setup() {
   createCanvas(CANVAS_WIDTH, CANVAS_HEIGHT);
   frameRate(60);
   pixelDensity(2)
-  multiCursor = new Multicursor
+  multiCursor = new Multicursor()
   level = new Level1();
   healthBar = new StatusBar()
   healthBar.color = [232, 0, 0] // #e80000
