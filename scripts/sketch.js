@@ -84,8 +84,8 @@ function preload() {
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
   perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
   perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
-  fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
-  fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
+  // fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
+  // fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
 }
 
 function adaptForScreen(callback) {
