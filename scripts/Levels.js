@@ -31,6 +31,18 @@ class Level {
   }
 }
 
+class Level0 extends Level {
+  constructor() {
+    super(0, 150, 3000, [
+      new PanzerEyes(),
+      new WingsEyes(),
+      new WeaklyEyes(),
+    ])
+  }
+  getCurrentMonsterActivity(v) {
+    return 3
+  }
+}
 
 class Level1 extends Level {
   constructor() {

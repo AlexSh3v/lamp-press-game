@@ -9,6 +9,7 @@ var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
 var damageRangeCircle;
+var touchRangeCircle; 
 
 
 // game mobs & images
@@ -95,11 +96,17 @@ function adaptForScreen(callback) {
   callback(CANVAS_WIDTH, CANVAS_HEIGHT)
 } 
 
+function isMobileDevice() {
+  return /Mobi/i.test(navigator.userAgent);
+}
+
 function setup() {
   onLightChangeCallbacks.push((theme) => {
-    cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
+    // cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
+    cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
   })
-  damageRangeCircle = new Circle(0.5, 0.65, 0.1)
+  damageRangeCircle = new Circle(0.5, 0.65, 0.03)
+  touchRangeCircle = new Circle(0,0,0.02)
   
   adaptForScreen((w, h) => { createCanvas(w, h) })
 
@@ -379,6 +386,12 @@ function debug() {
     damageRangeCircle.y, 
     damageRangeCircle.radius*2
   )
+  if (isMobileDevice())
+    circle(
+      touchRangeCircle.x,
+      touchRangeCircle.y,
+      touchRangeCircle.radius*2
+    )
   pop()
   lampHitLightBoxCollision.draw()
   multicursorBar.boxCollision.draw()
@@ -459,17 +472,25 @@ function switchMode(force = false) {
 function mousePressed() {
   if (isGameOver || isPaused) 
     return
+  touchRangeCircle.x = mouseX
+  touchRangeCircle.y = mouseY
   level.onMonsters((monster) => {
     let isInterceptingMulticursor = (
       multiCursor.isActivated &&
       hasInterception(multiCursor, monster.boxCollision)
     )
-    if (isInterceptingMulticursor || monster.boxCollision.hasCollision(mouseX, mouseY)) {
+    let isTouched = (
+      isMobileDevice() &&
+      hasInterception(touchRangeCircle, monster.boxCollision)
+    )
+    if (isInterceptingMulticursor || monster.boxCollision.hasCollision(mouseX, mouseY) || isTouched) {
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
-      monster.isDefeated = true
       monster.setScared()
-      multicursorBar.increase()
+      if (monster.scared) {
+        multicursorBar.increase()
+        monster.isDefeated = true
+      }
       if (isInterceptingMulticursor)
         return
       return 'break'

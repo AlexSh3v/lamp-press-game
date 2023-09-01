@@ -11,6 +11,10 @@ class Monster {
     this.startScaredMs = 0
     this.durationScaredMs = 1000
 
+    this.widthFactor = 200
+    this.heightFactor = 100
+    this.imageScaleFactor = 0.25 //  0.5 = 50%
+
     // FIXME: make movement relative to size of canvas also!!
     this.fasterStepK = 1
     this.stepK = 10
@@ -26,6 +30,9 @@ class Monster {
   set homeX(v) { this.rHomeX = v/CANVAS_WIDTH }
   get homeY() { return this.rHomeY * CANVAS_HEIGHT }
   set homeY(v) { this.rHomeY = v/CANVAS_HEIGHT }
+
+  get width() { return this.widthFactor * CANVAS_WIDTH }
+  get height() { return this.heightFactor * CANVAS_HEIGHT }
 
   setScared() {
     this.scared = true
@@ -107,8 +114,8 @@ class Monster {
 
     if (doShake) {
       // YOU THINK COSs AMD SINs ARE USELESS!?
-      shakeX = deltaTime / this.shakeK * randint(2, 3) * cos(randbool() ? a - pi / 2 : a + pi / 2)
-      shakeY = deltaTime / this.shakeK * randint(2, 3) * sin(randbool() ? a - pi / 2 : a + pi / 2)
+      shakeX = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * cos(randbool() ? a - pi / 2 : a + pi / 2)
+      shakeY = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * sin(randbool() ? a - pi / 2 : a + pi / 2)
     } else {
       shakeX = 0
       shakeY = 0
@@ -124,8 +131,9 @@ class Monster {
   }
 
   draw() {
-    this.boxCollision.set(this.x, this.y)
-    image(this.image, this.x, this.y, 0.125 * CANVAS_WIDTH, 0.075 * CANVAS_HEIGHT)
+    this.boxCollision.set(this.x, this.y, this.width, this.height)
+    image(this.image, this.x, this.y, this.width, this.height)
+    // image(this.image, this.x, this.y, 0.125 * CANVAS_WIDTH, 0.075 * CANVAS_HEIGHT)
   }
 }
 
@@ -135,7 +143,9 @@ class WeaklyEyes extends Monster {
     super(weakEyesImage, weakEyesBoxCollision.copy())
     this.fasterStepK = 1
     this.stepK = 10
-    this.shakeK = 30
+    this.shakeK = 10
+    this.widthFactor = 0.106 
+    this.heightFactor = 0.065
   }
 }
 
@@ -143,8 +153,10 @@ class WingsEyes extends Monster {
   constructor() {
     super(wingsEyesImage, wingsEyesBoxCollision.copy())
     this.fasterStepK = 1
-    this.stepK = 3 
+    this.stepK = 4  
     this.shakeK = 20
+    this.widthFactor = 0.106 
+    this.heightFactor = 0.065
   }
 }
 
@@ -155,6 +167,8 @@ class PanzerEyes extends Monster {
     this.stepK = 15
     this.shakeK = 10
     this.beforeScare = 0 
+    this.widthFactor  = 256 * 0.3 / 600
+    this.heightFactor = 225 * 0.3 / 600
   }
   setScared() {
     if (++this.beforeScare < 3)

@@ -70,6 +70,8 @@ class Circle {
   get x() { return this.rx*CANVAS_WIDTH }
   get y() { return this.ry*CANVAS_HEIGHT }
   get radius() { return this.rr*CANVAS_SIZE }
+  set x(v) { this.rx = v/CANVAS_WIDTH }
+  set y(v) { this.ry = v/CANVAS_HEIGHT }
 
   hasInterception(rectangle) { 
     return hasInterception(this, rectangle)
