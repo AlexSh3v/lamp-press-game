@@ -1,5 +1,3 @@
-
-const pi = 3.14159265359;
 var level
 var isGameOver = false
 var isLight = true;
@@ -10,6 +8,9 @@ var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
 var damageRangeCircle;
 var touchRangeCircle; 
+
+var relDeskY = 0.82
+var relDeskHeight = 0.02
 
 
 // game mobs & images
@@ -54,7 +55,7 @@ let freezeClicks = false;
 let freezingTime = 0;
 
 // Box collisions
-let lampHitLightBoxCollision = new BoxCollision(.45, .615, 0.1, 0.063)
+let lampHitLightBoxCollision
 let weakEyesBoxCollision = new BoxCollision(0, 0, 0.125, 0.075)
 let wingsEyesBoxCollision = new BoxCollision(0, 0, 0.125, 0.075)
 let panzerEyesBoxCollision = new BoxCollision(0, 0, 0.125, 0.075)
@@ -105,8 +106,6 @@ function setup() {
     // cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
     cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
   })
-  damageRangeCircle = new Circle(0.5, 0.65, 0.01)
-  touchRangeCircle = new Circle(0,0,0.02)
   
   adaptForScreen((w, h) => { createCanvas(w, h) })
 
@@ -146,9 +145,13 @@ function setup() {
   // panner.process(mySound); // Connect the sound to the panner   
   // panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
 
-  lamp = new Mob(lampWhiteImage, 0.25, 0.6975, 0.5, 0.5)
+  lamp = new BasicLamp()
   pauseButton = new Mob(batteryImage, 0.05, 0.1, 0.1, 0.1)
-  solarPanel = new Mob(solarPanelWhiteImage, 0.2, 0.6975, 0.2, 0.2)
+  solarPanel = new SolarPanel()
+
+  lampHitLightBoxCollision = new BoxCollision(lamp.rx - 0.1/2, lamp.ry - 0.05 - 0.063/2, 0.1, 0.063)
+  damageRangeCircle = new Circle(lamp.rx, lamp.ry - 0.05, 0.01)
+  touchRangeCircle = new Circle(0,0,0.02)
 
   setupOnClicks()
 
@@ -255,7 +258,7 @@ function drawGame() {
   solarPanel.draw()
   // Desk
   fill((isLight) ? 0 : 255);
-  rect(0, CANVAS_HEIGHT * 0.6875, CANVAS_WIDTH, CANVAS_WIDTH * 0.025);
+  rect(0, CANVAS_HEIGHT * relDeskY, CANVAS_WIDTH, CANVAS_HEIGHT * relDeskHeight);
   // Monsters 
   level.onMonsters((monster) => { monster.draw() });
 }
@@ -304,7 +307,10 @@ function updatePositions() {
             return spawnIt(monster)
           }
           monster.scared = false
-          monster.moveTo(lamp.x+0.4*lamp.width, lamp.y - 0.2*lamp.height);
+          monster.moveTo(
+            damageRangeCircle.x - monster.width/2, 
+            damageRangeCircle.y - monster.height/2
+          );
         }
       } else {
         monster.goBack();

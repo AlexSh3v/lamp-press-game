@@ -131,8 +131,8 @@ class Monster {
 
     if (doShake) {
       // YOU THINK COSs AMD SINs ARE USELESS!?
-      shakeX = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * cos(randbool() ? a - pi / 2 : a + pi / 2)
-      shakeY = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * sin(randbool() ? a - pi / 2 : a + pi / 2)
+      shakeX = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * cos(randbool() ? a - PI / 2 : a + PI / 2)
+      shakeY = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * sin(randbool() ? a - PI / 2 : a + PI / 2)
     } else {
       shakeX = 0
       shakeY = 0

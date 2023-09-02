@@ -1,8 +1,19 @@
 class Mob {
-  constructor(img, rx, ry, rwidth, rheight) {
-    // x, y coord will represent bottom left point
-    // its going to be much easier because we gonna 
-    // draw from the desk
+  constructor(img, rx, ry, rwidth, rheight, drawingVector) {
+    // Understanding cornerVector:
+    // (0, 0)       (-1, 0)
+    //  * --------- *
+    //  |           |
+    //  |           |
+    //  * --------- *
+    // (0, -1)      (-1, -1)
+    // 
+    // Default: 0, -1
+    // 
+    // Q: Why negatives? 
+    // A: Because drawing starting from top left corner.
+    //    Therefore, corner is the relative vector to the drawing point.
+
     this.image = img
     this.whenDarkImag = undefined
     this.rx = rx
@@ -13,6 +24,11 @@ class Mob {
       this.rx, this.ry, 
       this.rw, this.rh, 
     )
+    if (drawingVector === undefined)
+      this.drawingVector = createVector(0, -1)
+    else 
+      this.drawingVector = drawingVector
+
   }
 
 
@@ -51,13 +67,43 @@ class Mob {
   }
 
   draw() {
-    // Drawing from bottom left point
     push()
     let img = this.image
     if (this.whenDarkImag !== undefined && !isLight)
       img = this.whenDarkImag
-    image(img, this.x, this.y - this.height, this.width, this.height)
+    image(
+      img, 
+      this.x + this.drawingVector.x*this.width, 
+      this.y + this.drawingVector.y*this.height, 
+      this.width, 
+      this.height
+    )
     pop()
   }
 
+}
+
+
+class BasicLamp extends Mob {
+  constructor() {
+    let img = lampWhiteImage
+    let rx = 0.5
+    let ry = relDeskY + relDeskHeight
+    let rwidth = 810 * 0.4 / 600
+    let rheight = 766 * 0.4 / 600
+    let drawingVector = createVector(-.5, -1)
+    super(img, rx, ry, rwidth, rheight, drawingVector)
+  }
+}
+
+class SolarPanel extends Mob {
+  constructor() {
+    let img = solarPanelWhiteImage
+    let rx = 0.2
+    let ry = relDeskY + 0.5*relDeskHeight
+    let rwidth = 172 * 0.6 / 600
+    let rheight = 177 * 0.6 / 600
+    let drawingVector = createVector(0, -1)
+    super(img, rx, ry, rwidth, rheight, drawingVector)
+  }
 }
