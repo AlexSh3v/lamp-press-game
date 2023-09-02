@@ -105,7 +105,7 @@ function setup() {
     // cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
     cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
   })
-  damageRangeCircle = new Circle(0.5, 0.65, 0.03)
+  damageRangeCircle = new Circle(0.5, 0.65, 0.01)
   touchRangeCircle = new Circle(0,0,0.02)
   
   adaptForScreen((w, h) => { createCanvas(w, h) })
@@ -308,8 +308,10 @@ function updatePositions() {
       } else {
         monster.goBack();
       }
-      if (damageRangeCircle.hasInterception(monster.boxCollision))
-        healthBar.decreasePerFrame()
+      if (damageRangeCircle.hasInterception(monster.boxCollision)) {
+        if (monster.isReadyToHit())
+          healthBar.decrease(monster.damagePerHit)
+      }
     });
 
   // Actions on `Multicursor` ability

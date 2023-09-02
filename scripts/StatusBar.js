@@ -112,17 +112,20 @@ class StatusBar {
     this.startY = y
   }
 
-  decrease() {
+  decrease(v) {
 
-    if (this.isIncreasing) {
-      this.startTimeMs = millis
-      this.isIncreasing = false
-    }
+    // if (this.isIncreasing) {
+    //   this.startTimeMs = millis
+    //   this.isIncreasing = false
+    // }
 
-    if (millis - this.startTimeMs < 500)
-      return;
+    // if (millis - this.startTimeMs < 500)
+    //   return;
 
-    this.value = Math.max(0, this.value - 1)
+    if (v === undefined || v == 0)
+      v = 1
+
+    this.value = Math.max(0, this.value - v)
     this.startTimeMs = millis
   }
 

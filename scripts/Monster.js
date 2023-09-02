@@ -10,6 +10,10 @@ class Monster {
     this.scared = false
     this.startScaredMs = 0
     this.durationScaredMs = 1000
+    
+    this.damageDelayMs = 2000
+    this.damagePerHit = 1
+    this._damagedDelayStartedMs = 0
 
     this.widthFactor = 200
     this.heightFactor = 100
@@ -33,6 +37,16 @@ class Monster {
 
   get width() { return this.widthFactor * CANVAS_WIDTH }
   get height() { return this.heightFactor * CANVAS_HEIGHT }
+
+  isReadyToHit() {
+    let flag = false
+    if (this._damagedDelayStartedMs == 0 || millis - this._damagedDelayStartedMs > this.damageDelayMs) {
+      flag = true
+      this._damagedDelayStartedMs = millis
+      console.log(`Monster is ready to hit you at ${millis} ms!`);
+    } 
+    return flag
+  }
 
   setScared() {
     this.scared = true
@@ -146,6 +160,8 @@ class WeaklyEyes extends Monster {
     this.shakeK = 10
     this.widthFactor = 0.106 
     this.heightFactor = 0.065
+    this.damageDelayMs = 2000
+    this.damagePerHit = 1
   }
 }
 
@@ -157,6 +173,8 @@ class WingsEyes extends Monster {
     this.shakeK = 10
     this.widthFactor  = 256 * 0.3 / 600
     this.heightFactor = 108 * 0.3 / 600
+    this.damageDelayMs = 500
+    this.damagePerHit = 1
   }
 }
 
@@ -169,6 +187,8 @@ class PanzerEyes extends Monster {
     this.beforeScare = 0 
     this.widthFactor  = 256 * 0.3 / 600
     this.heightFactor = 225 * 0.3 / 600
+    this.damageDelayMs = 3000
+    this.damagePerHit = 10
   }
   setScared() {
     if (++this.beforeScare < 3)
