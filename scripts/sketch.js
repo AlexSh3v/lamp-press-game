@@ -2,6 +2,7 @@ var level
 var isGameOver = false
 var isLight = true;
 var isPaused = false;
+var isLampClickedWhenMonsterNearby = false
 var multiCursor;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
@@ -487,6 +488,7 @@ function mousePressed() {
     return
   touchRangeCircle.x = mouseX
   touchRangeCircle.y = mouseY
+  isLampClickedWhenMonsterNearby = false
   level.onMonsters((monster) => {
     let isInterceptingMulticursor = (
       multiCursor.isActivated &&
@@ -497,6 +499,11 @@ function mousePressed() {
       hasInterception(touchRangeCircle, monster.boxCollision)
     )
     if (isInterceptingMulticursor || monster.boxCollision.hasCollision(mouseX, mouseY) || isTouched) {
+
+      if (lampHitLightBoxCollision.hasCollision(mouseX, mouseY)) {
+        isLampClickedWhenMonsterNearby = true
+      }
+
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.setScared()
@@ -557,17 +564,18 @@ function mouseClicked() {
   if (multicursorBar.boxCollision.hasCollision(mouseX, mouseY))
     multicursorBar.boxCollision.onClick()
 
-  // FIXME: check 2 rect interceptions
   let isClickable = true 
   level.onMonsters(monster => {
-    if (monster.boxCollision.hasCollision(lampHitLightBoxCollision.x, lampHitLightBoxCollision.y)) {
-      console.log(`111111111111111111111111111!!!`);
+    if (areRectanglesIntercept(lampHitLightBoxCollision, monster.boxCollision)) {
+      console.log(`Lamp is unclickable`);
       isClickable = false
       return 'break'
     }
   })
-  if (isClickable && lampHitLightBoxCollision.hasCollision(mouseX, mouseY))
+  if (isClickable && lampHitLightBoxCollision.hasCollision(mouseX, mouseY) && !isLampClickedWhenMonsterNearby) {
     lampHitLightBoxCollision.onClick()
+    isLampClickedWhenMonsterNearby = false
+  }
 
 }
 
