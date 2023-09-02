@@ -13,6 +13,7 @@ var touchRangeCircle;
 var relDeskY = 0.82
 var relDeskHeight = 0.02
 
+const DARK_RED = [232, 0, 0] // #e80000
 
 // game mobs & images
 let DEBUG = false
@@ -54,6 +55,9 @@ let multicursorBar;
 let performedClicks = 0;
 let freezeClicks = false;
 let freezingTime = 0;
+let FREEZE_DURATION_MS = 10000
+let UNDER_FREEZE_LIMIT_MS = 15000
+let CLICKS_TO_FREEZE = 3
 
 // Box collisions
 let lampHitLightBoxCollision
@@ -79,8 +83,8 @@ function preload() {
   wingsEyesImage = loadImage('assets/pics/eyes_wings.png')
   panzerEyesImage = loadImage('assets/pics/eyes_panzer.png')
   batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
-  thermometorWhite = loadImage('assets/pics/thermometer_white.png')
-  thermometorBlack = loadImage('assets/pics/thermometer_black.png')
+  thermometorWhite = loadImage('assets/ui/thermometer_white.png')
+  thermometorBlack = loadImage('assets/ui/thermometer_black.png')
   cursorWhite = loadImage('assets/pics/cursor_white.png')
   cursorBlack = loadImage('assets/pics/cursor_black.png')
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
@@ -115,7 +119,6 @@ function setup() {
   multiCursor = new Multicursor()
   level = new Level1();
   healthBar = new StatusBar()
-  healthBar.color = [232, 0, 0] // #e80000
   heatBar = new StatusBar()
   heatBar.value = 0
   heatBar.threshold = 50
@@ -266,6 +269,8 @@ function drawGame() {
 
 function drawGameUI() {
   // Status bar: health, heat, energy ...
+  if (heatBar.value >= 90) 
+    healthBar.color = DARK_RED
   barGroup.draw()
   // Draw fps & level
   fill(isLight ? 0 : 255)
@@ -303,6 +308,7 @@ function drawMainUI() {
 
 function updatePositions() {
     // Movement of monsters
+    let isHitting = false
     level.onMonsters((monster) => {
       if (!isLight) {
         if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
@@ -321,8 +327,10 @@ function updatePositions() {
         monster.goBack();
       }
       if (damageRangeCircle.hasInterception(monster.boxCollision)) {
-        if (monster.isReadyToHit())
+        if (monster.isReadyToHit()) {
           healthBar.decrease(monster.damagePerHit)
+          isHitting = true
+        }
       }
     });
 
@@ -337,12 +345,11 @@ function updatePositions() {
   else
     multicursorBar.color = isLight? [0,0,0] : [255,255,255] // #fff
 
-  // Delay of 3sec before player can use light again
-  // TODO: extract freeze duration!
-  if (freezeClicks && freezingTime >= 5000) {
+  // Disable freezing when time is over
+  if (freezeClicks && freezingTime >= FREEZE_DURATION_MS) {
     freezeClicks = false;
     freezingTime = 0;
-    console.log(`FREEZE cause by Clicks is over!`);
+    console.log(`FREEZE cause by clicks is OVER!`);
   }    
   
   // Bars
@@ -353,22 +360,52 @@ function updatePositions() {
       switchMode(true)
       heatBar.color = [75,75,75] // #0a4200
     } else {
-      heatBar.color = isLight? [0,0,0] : [255,255,255] // #55e800
+      // TODO: move to utils.js 
+      start_color = [0,0,0]  // RGB value for white (#000)
+      end_color = [235, 109, 0]  // RGB value for the final color (#e36b02)
+      
+      // Calculate the color values based on the linear interpolation formula
+      let v = map(heatBar.value, 80, 100, 0, 100, true)
+      r = int(start_color[0] - ((start_color[0] - end_color[0]) * v / 100))
+      g = int(start_color[1] - ((start_color[1] - end_color[1]) * v / 100))
+      b = int(start_color[2] - ((start_color[2] - end_color[2]) * v / 100))
+      
+      // Convert the RGB color values to hexadecimal format
+      heatBar.color = [r,g,b]
     }
     heatBar.k = 50
     heatBar.increasePerFrame()
   } else {
     solarPanelChargeBar.k = level.decK
     solarPanelChargeBar.decreasePerFrame()
-    if (!heatBar.isReachedMaximum && !freezeClicks)
-      heatBar.color = isLight? [0,0,0] :  [255,255,255] // #55e800
+    if (!heatBar.isReachedMaximum && !freezeClicks) {
+      start_color = [255, 255, 255]  // RGB value for white (#ffffff)
+      end_color = [255, 120, 3]  // RGB value for the final color (##ff7803)
+      
+      // Calculate the color values based on the linear interpolation formula
+      let v = map(heatBar.value, 80, 100, 0, 100, true)
+      r = int(start_color[0] - ((start_color[0] - end_color[0]) * v / 100))
+      g = int(start_color[1] - ((start_color[1] - end_color[1]) * v / 100))
+      b = int(start_color[2] - ((start_color[2] - end_color[2]) * v / 100))
+      
+      // Convert the RGB color values to hexadecimal format
+      heatBar.color = [r,g,b]
+    }
     else if (freezeClicks)
       heatBar.color = [75,75,75] // #0a4200
     heatBar.k = 300
     heatBar.decreasePerFrame()
   }
-  healthBar.color = isLight? [0,0,0] : [255,255,255]
+  if (isHitting)
+    healthBar.color = DARK_RED
+  else 
+    healthBar.color = isLight? [0,0,0] : [255,255,255]
   solarPanelChargeBar.color = isLight? [0,0,0] : [255,255,255]
+
+  if (heatBar.value >= 90) {
+    healthBar.k = 500
+    healthBar.decreasePerFrame()
+  }
 }
 
 function draw() {
@@ -453,9 +490,9 @@ function switchMode(force = false) {
   }
 
   if (!force) {
-    performedClicks++;
-    // TODO: extract `5` & `5000` from here!
-    if (!freezeClicks && performedClicks >= 5 && freezingTime < 5000) {
+    if (isLight)
+      performedClicks++;
+    if (!freezeClicks && performedClicks >= CLICKS_TO_FREEZE && freezingTime < UNDER_FREEZE_LIMIT_MS) {
       freezeClicks = true;
       freezingTime = 0;
       performedClicks = 0;
@@ -463,7 +500,7 @@ function switchMode(force = false) {
       callOnLightChangeCallbacks(false)
       console.log(`FREEZE FUCKING NOW!`)
       return;
-    } else if (freezingTime > 5000) {
+    } else if (freezingTime > UNDER_FREEZE_LIMIT_MS) {
       freezingTime = 0;
       performedClicks = 0;
     }
