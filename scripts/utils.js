@@ -108,3 +108,9 @@ function areRectanglesIntercept(rectangle1, rectangle2) {
 
   return false; // Rectangles do not intercept
 }
+
+function dynamicFont(v) {
+  // v - 600
+  // x - 700
+  textSize(CANVAS_SIZE * v / 600)
+}

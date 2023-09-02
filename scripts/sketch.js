@@ -130,7 +130,7 @@ function setup() {
       multiCursor.isActivated = !multiCursor.isActivated
   } 
   barGroup = new BarGroup(
-    0.03, 0.95,
+    0.05, 0.95,
     [healthBar, heatBar, solarPanelChargeBar, multicursorBar],
     [
       Mob.dico(heartBlackImage, heartWhiteImage), 
@@ -159,7 +159,7 @@ function setup() {
     spawnIt(monster)
   })
 
-  textSize(16)
+  dynamicFont(16)
 
   callOnLightChangeCallbacks(true)
 }
@@ -170,10 +170,10 @@ function setupOnClicks() {
 
 function drawGameOver() {
   if (solarPanelChargeBar.value == 100) {
-    background(0,0,0, 200)
+    background(0,0,0, 150)
     push()
     fill(255)
-    textSize(38)
+    dynamicFont(38)
     textAlign(CENTER)
     text(`Ты победил Уровень ${level.N}!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
     pop()
@@ -192,7 +192,7 @@ function drawGameOver() {
         return false
       }
       push()
-      textSize(18)
+      dynamicFont(18)
       fill(255)
       textAlign(CENTER)
       text(`Нажми, чтобы начать следующий уровень!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
@@ -208,7 +208,7 @@ function drawGameOver() {
     background(0,0,0, 150)
     push()
     fill(255)
-    textSize(48)
+    dynamicFont(48)
     textAlign(CENTER)
     text(`Ты проиграл!)`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.5)
     pop()
@@ -227,7 +227,7 @@ function drawGameOver() {
         return false
       }
       push()
-      textSize(18)
+      dynamicFont(18)
       textAlign(CENTER)
       text(`Нажми, чтобы начать заново!`, CANVAS_WIDTH * 0.5, CANVAS_HEIGHT * 0.75)
       pop()
@@ -268,9 +268,13 @@ function drawGameUI() {
   barGroup.draw()
   // Draw fps & level
   fill(isLight ? 0 : 255)
-  textSize(16)
-  text(`Level ${level.N}`, CANVAS_WIDTH * 0.85, CANVAS_HEIGHT * .05)
-  text(`${Math.round(frameRate())} FPS`, 10, 20)
+  dynamicFont(22)
+  textAlign(RIGHT)
+  text(`Level ${level.N}`, CANVAS_WIDTH * 0.97, CANVAS_HEIGHT * .93)
+  if (DEBUG) {
+    textAlign(LEFT)
+    text(`${Math.round(frameRate())} FPS`, CANVAS_WIDTH * 0.01, CANVAS_HEIGHT * 0.05)
+  }
   // Draw buttons
   // pauseButton.draw()
 }
