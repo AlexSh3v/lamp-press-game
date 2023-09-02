@@ -52,11 +52,9 @@ class Monster {
     this.scared = true
     this.startScaredMs = millis
   }
-
-  randomizeSpawn() {
-    let rx, ry;
-    this.scared = false
-    this.startScaredMs = 0
+    
+  getInitialLocation() {
+    let rx,ry
     const minDelta = 0.4
     const maxDelta = 1.2
     const edge = 0.3
@@ -80,10 +78,15 @@ class Monster {
       default:
         break;
     }
-    // 1 -- 400w
-    // x -- 600w
-    console.log(`[Randomized] x=${rx}, y=${ry}`)
+    return [rx, ry]
+  }
+
+  spawnAt(rx, ry) {
     this.setXY(rx, ry)
+    this.scared = false
+    this.startScaredMs = 0
+    this.setXY(rx, ry)
+    console.log(`[New Spawn] x=${Math.round(this.x)}, y=${Math.round(this.y)}`)
   }
 
   isVisible() {
@@ -163,6 +166,12 @@ class WeaklyEyes extends Monster {
     this.damageDelayMs = 2000
     this.damagePerHit = 1
   }
+
+  getInitialLocation() {
+    let rx = randint(-0.1*CANVAS_WIDTH - this.width, 1.1*CANVAS_WIDTH) 
+    let ry = randint(-0.4*CANVAS_HEIGHT - this.height, -0.1*CANVAS_HEIGHT - this.height)
+    return [rx, ry]
+  }
 }
 
 class WingsEyes extends Monster {
@@ -175,6 +184,21 @@ class WingsEyes extends Monster {
     this.heightFactor = 108 * 0.3 / 600
     this.damageDelayMs = 500
     this.damagePerHit = 1
+  }
+
+  getInitialLocation() {
+    let rx,ry
+    switch (randint(2, 3)) {
+      case 2: // East Attack
+        rx = randint(1.1*CANVAS_WIDTH, 1.5*CANVAS_WIDTH)
+        ry = randint(-0.1*CANVAS_HEIGHT - this.height, 0.3*CANVAS_HEIGHT)
+        break;
+      case 3: // South Attack
+        rx = randint(-0.8*CANVAS_WIDTH - this.width, -0.1*CANVAS_WIDTH - this.width)
+        ry = randint(-0.1*CANVAS_HEIGHT - this.height, 0.3*CANVAS_HEIGHT)
+        break;
+    }
+    return [rx, ry]
   }
 }
 
@@ -190,13 +214,18 @@ class PanzerEyes extends Monster {
     this.damageDelayMs = 3000
     this.damagePerHit = 10
   }
+  getInitialLocation() {
+    let rx = randint(-0.1*CANVAS_WIDTH - this.width, 1.1*CANVAS_WIDTH) 
+    let ry = randint(-0.7*CANVAS_HEIGHT - this.height, -0.1*CANVAS_HEIGHT - this.height)
+    return [rx, ry]
+  }
   setScared() {
     if (++this.beforeScare < 3)
       return
     super.setScared()
   }
-  randomizeSpawn() {
+  spawnAt(rx, ry) {
     this.beforeScare = 0 
-    super.randomizeSpawn()
+    return super.spawnAt(rx, ry)
   }
 }

@@ -94,3 +94,17 @@ function hasInterception(circle, rectangle) {
 
     return cornerDistanceSq <= (circle.radius ** 2);
   }
+
+
+function areRectanglesIntercept(rectangle1, rectangle2) {
+  // Check if the left or right edge of one rectangle is
+  // between the left and right edge of the other rectangle
+  if (
+    rectangle1.x < rectangle2.x + rectangle2.width &&
+    rectangle1.x + rectangle1.width > rectangle2.x &&
+    rectangle1.y < rectangle2.y + rectangle2.height &&
+    rectangle1.y + rectangle1.height > rectangle2.y
+  ) return true; // Rectangles intercept
+
+  return false; // Rectangles do not intercept
+}

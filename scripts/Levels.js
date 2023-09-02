@@ -23,6 +23,34 @@ class Level {
         break
     }
   }
+  getClearLocation(monster) {
+    let coord = monster.getInitialLocation()
+    let tries = 0
+    while (!this.canMonsterBeSpawnHere(monster, coord[0], coord[1])) {
+      coord = monster.getInitialLocation()
+      tries++
+    }
+
+    if (tries > 0)
+      console.log(`[Spawn] tries=${tries}`);
+
+    return coord
+  }
+  canMonsterBeSpawnHere(monster, rx, ry) {
+    let tempColl = monster.boxCollision.copy()
+    tempColl.set(
+      rx * CANVAS_WIDTH, ry * CANVAS_HEIGHT,
+      monster.width, monster.height
+    )
+    let canSpawn = true
+    this.onMonsters(otherMonster => {
+      if (areRectanglesIntercept(tempColl, otherMonster.boxCollision)) {
+        canSpawn = false
+        return 'break'
+      }
+    })
+    return canSpawn
+  }
   getCurrentMonsterActivity(v) {
     // Shows how to use monsters array
     // v: percentage of solar panel status bar 

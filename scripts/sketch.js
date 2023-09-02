@@ -152,7 +152,9 @@ function setup() {
 
   setupOnClicks()
 
-  level.onMonsters((monster) => monster.randomizeSpawn())
+  level.onMonsters((monster) => {
+    spawnIt(monster)
+  })
 
   textSize(16)
 
@@ -299,8 +301,7 @@ function updatePositions() {
           monster.goBack(true, true)
         } else {
           if (monster.scared && !monster.isVisible()) {
-            console.log(`[MONSTER] respawning after scarying away ${monster.x} ${monster.y}`)
-            return monster.randomizeSpawn()
+            return spawnIt(monster)
           }
           monster.scared = false
           monster.moveTo(lamp.x+0.4*lamp.width, lamp.y - 0.2*lamp.height);
@@ -466,7 +467,7 @@ function switchMode(force = false) {
     })
   } else {
     level.onMonsters((monster) => {
-      monster.randomizeSpawn()
+      spawnIt(monster)
     })
   } 
 }
@@ -583,4 +584,9 @@ function windowResized() {
 function callOnLightChangeCallbacks(v) {
   isLight = v
   onLightChangeCallbacks.forEach(callback => { callback(v) });
+}
+
+function spawnIt(monster) {
+  const coord = level.getClearLocation(monster)
+  monster.spawnAt(coord[0], coord[1])
 }
