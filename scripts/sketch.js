@@ -68,30 +68,32 @@ let batteryEyesBoxCollision = new BoxCollision(0, 0, 0.125, 0.075)
 
 let mySound;
 let panner;
+
+
 function preload() {
+  // Mobs
   lampWhiteImage = loadImage('assets/pics/white_lamp.png');
   lampDarkImage = loadImage('assets/pics/black_lamp.png');
   solarPanelWhiteImage = loadImage('assets/pics/solar_panel_white.png')
   solarPanelBlackImage = loadImage('assets/pics/solar_panel_black.png')
+  
+  // UI
+  heartBlackImage = loadImage('assets/ui/heart_black.png')
+  heartWhiteImage = loadImage('assets/ui/heart_white.png')
+  thermometorWhite = loadImage('assets/ui/thermometer_white.png')
+  thermometorBlack = loadImage('assets/ui/thermometer_black.png')
+  cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
+  perkCursorsWhite = loadImage('assets/ui/perk_cursors_white.png')
+  perkCursorsBlack = loadImage('assets/ui/perk_cursors_black.png')
+  // fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
+  // fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
+
+  // Enemy
   eyesImage = loadImage('assets/pics/evil_eyes.png');
-  // mySound = loadSound('assets/mus/tu.mp3');
-  heartBlackImage = loadImage('assets/pics/heart_black.png')
-  heartWhiteImage = loadImage('assets/pics/heart_white.png')
-  batteryImage = loadImage('assets/pics/battery.png')
-  battery2Image = loadImage('assets/pics/battery2.png')
   weakEyesImage = loadImage('assets/pics/evil_eyes.png')
   wingsEyesImage = loadImage('assets/pics/eyes_wings.png')
   panzerEyesImage = loadImage('assets/pics/eyes_panzer.png')
-  batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
-  thermometorWhite = loadImage('assets/ui/thermometer_white.png')
-  thermometorBlack = loadImage('assets/ui/thermometer_black.png')
-  cursorWhite = loadImage('assets/pics/cursor_white.png')
-  cursorBlack = loadImage('assets/pics/cursor_black.png')
-  cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
-  perkCursorsWhite = loadImage('assets/pics/perk_cursors_white.png')
-  perkCursorsBlack = loadImage('assets/pics/perk_cursors_black.png')
-  // fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
-  // fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
+  // batteryEyesImage = loadImage('assets/pics/eyes_battery.png')
 }
 
 function adaptForScreen(callback) {
