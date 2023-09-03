@@ -90,20 +90,10 @@ class StatusBar {
     this.onClick = undefined
   }
 
-  increase() {
-    //   deltaTime
-    // [ ] 20ms [ ]   60fps
-    // [ ] 60ms [ ]   30fps
-
-    if (!this.isIncreasing) {
-      this.startTimeMs = millis
-      this.isIncreasing = true
-    }
-
-    if (millis - this.startTimeMs < 1500)
-      return;
-
-    this.value = Math.min(100, this.value + 1)
+  increase(v) {
+    if (v === undefined || v == 0) 
+      v = 1
+    this.value = Math.min(100, this.value + v)
     this.startTimeMs = millis
   }
 
@@ -113,15 +103,6 @@ class StatusBar {
   }
 
   decrease(v) {
-
-    // if (this.isIncreasing) {
-    //   this.startTimeMs = millis
-    //   this.isIncreasing = false
-    // }
-
-    // if (millis - this.startTimeMs < 500)
-    //   return;
-
     if (v === undefined || v == 0)
       v = 1
 

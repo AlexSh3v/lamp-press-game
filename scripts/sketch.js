@@ -117,7 +117,7 @@ function setup() {
   frameRate(60);
   pixelDensity(2)
   multiCursor = new Multicursor()
-  level = new Level1();
+  level = new Level12();
   healthBar = new StatusBar()
   heatBar = new StatusBar()
   heatBar.value = 0
@@ -548,7 +548,12 @@ function mousePressed() {
       monster.boxCollision.onClick()
       monster.setScared()
       if (monster.scared) {
-        multicursorBar.increase()
+        if (!isInterceptingMulticursor) {
+          if (monster instanceof PanzerEyes)
+            multicursorBar.increase(3)
+          else 
+            multicursorBar.increase()
+        }
         monster.setDefeat()
       }
       if (isInterceptingMulticursor)

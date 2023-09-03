@@ -222,6 +222,12 @@ class WingsEyes extends Monster {
 }
 
 class PanzerEyes extends Monster {
+  static Type = { 
+    Default: 'default', 
+    WithArmor40: 'withArmor40',
+    Bigger: 'bigger'
+  }
+
   constructor() {
     super(panzerEyesImage, panzerEyesBoxCollision.copy())
     this.fasterStepKInit = 1.5
@@ -235,11 +241,13 @@ class PanzerEyes extends Monster {
     this.heightFactor = 225 * 0.3 / 600
     this.damageDelayMs = 3000
     this.damagePerHit = 10
+    this.type = PanzerEyes.Type.Default
   }
   static summon() { 
     return new PanzerEyes()
   }
   withArmor40() {
+    this.type = PanzerEyes.Type.WithArmor40
     this.toScareNeeds = 7
     this.widthFactor  = 256 * 0.4 / 600
     this.heightFactor = 225 * 0.4 / 600
@@ -248,6 +256,7 @@ class PanzerEyes extends Monster {
     return this
   }
   bigger() {
+    this.type = PanzerEyes.Type.Bigger
     this.toScareNeeds = 20
     this.stepK = 20
     this.widthFactor  = 256 * 0.6 / 600
@@ -257,8 +266,22 @@ class PanzerEyes extends Monster {
     return this
   }
   getInitialLocation() {
+    let kHighest, kLowest;
+    switch (this.type) {
+      case PanzerEyes.Type.Bigger:
+        kHighest = -1
+        kLowest = -0.7
+        break;
+      case PanzerEyes.Type.WithArmor40:
+        kHighest = -0.6
+        kLowest = -0.4
+        break;
+      default:
+        kHighest = -0.5
+        kLowest = -0.2
+    }
     let rx = randint(-0.1*CANVAS_WIDTH - this.width, 1.1*CANVAS_WIDTH) 
-    let ry = randint(-0.9*CANVAS_HEIGHT - this.height, -0.3*CANVAS_HEIGHT - this.height)
+    let ry = randint(kHighest*CANVAS_HEIGHT - this.height, kLowest*CANVAS_HEIGHT - this.height)
     return [rx, ry]
   }
   setScared() {
