@@ -31,8 +31,6 @@ let solarPanelBlackImage;
 
 let heartBlackImage;
 let thermometorWhite;
-let batteryImage;
-let battery2Image;
 
 let weakEyesImage
 let wingsEyesImage
@@ -83,8 +81,10 @@ function preload() {
   thermometorWhite = loadImage('assets/ui/thermometer_white.png')
   thermometorBlack = loadImage('assets/ui/thermometer_black.png')
   cursorDeadEye = loadImage('assets/pics/cursor_dead_eye.png')
-  perkCursorsWhite = loadImage('assets/ui/perk_cursors_white.png')
-  perkCursorsBlack = loadImage('assets/ui/perk_cursors_black.png')
+  perkCursorsWhite = loadImage('assets/ui/perk_multicursor_white.png')
+  perkCursorsBlack = loadImage('assets/ui/perk_multicursor_black.png')
+  cursorWhite = loadImage('assets/ui/cursor_white.png')
+  cursorBlack = loadImage('assets/ui/cursor_black.png')
   // fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
   // fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
 
@@ -111,7 +111,7 @@ function isMobileDevice() {
 function setup() {
   onLightChangeCallbacks.push((theme) => {
     // cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
-    cursor(isLight? 'assets/pics/cursor_black.png' : 'assets/pics/cursor_white.png')
+    cursor(isLight? 'assets/ui/cursor_black.png' : 'assets/ui/cursor_white.png')
   })
   
   adaptForScreen((w, h) => { createCanvas(w, h) })
@@ -152,7 +152,7 @@ function setup() {
   // panner.set(0, 0, 0); // Set initial position of the sound (at the center of the canvas) 
 
   lamp = new BasicLamp()
-  pauseButton = new Mob(batteryImage, 0.05, 0.1, 0.1, 0.1)
+  pauseButton = new Mob(lampWhiteImage, 0.05, 0.1, 0.1, 0.1) // TODO: add pause image!
   solarPanel = new SolarPanel()
 
   lampHitLightBoxCollision = new BoxCollision(lamp.rx - 0.1/2, lamp.ry - 0.05 - 0.063/2, 0.1, 0.063)
@@ -451,7 +451,7 @@ function debug() {
   level.onMonsters((monster) => {
     monster.boxCollision.draw([255, 0, 0])
   });
-  pauseButton.boxCollision.draw()
+  // pauseButton.boxCollision.draw()
 }
 
 function isCanvasClearOfEnemies() {
