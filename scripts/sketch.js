@@ -455,7 +455,7 @@ function debug() {
 function isCanvasClearOfEnemies() {
   let isClear = true
   level.onMonsters((monster) => {
-    if (monster.isVisible()) {
+    if (monster.isVisible() && !(monster instanceof PanzerEyes)) {
       isClear = false
       return 'break'
     }
@@ -515,7 +515,10 @@ function switchMode(force = false) {
     })
   } else {
     level.onMonsters((monster) => {
-      spawnIt(monster)
+      if (monster instanceof PanzerEyes && monster.isVisible() && !monster.isDefeated)
+        monster.unscare()
+      else
+        spawnIt(monster)
     })
   } 
 }
@@ -546,7 +549,7 @@ function mousePressed() {
       monster.setScared()
       if (monster.scared) {
         multicursorBar.increase()
-        monster.isDefeated = true
+        monster.setDefeat()
       }
       if (isInterceptingMulticursor)
         return
@@ -571,7 +574,15 @@ function mouseClicked() {
           break;
         case 6: level = new Level7()
           break;
-        case 7: //level = new Level7()
+        case 7: level = new Level8()
+          break;
+        case 8: level = new Level9()
+          break;
+        case 9: level = new Level10()
+          break;
+        case 10: level = new Level11()
+          break;
+        case 11: level = new Level12()
           break;
         default: level = new Level1()
           break;

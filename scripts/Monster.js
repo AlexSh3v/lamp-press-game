@@ -20,6 +20,7 @@ class Monster {
     this.imageScaleFactor = 0.25 //  0.5 = 50%
 
     // FIXME: make movement relative to size of canvas also!!
+    this.fasterStepKInit = 1
     this.fasterStepK = 1
     this.stepK = 10
     this.shakeK = 25
@@ -48,8 +49,17 @@ class Monster {
     return flag
   }
 
+  setDefeat() {
+    this.isDefeated = true
+    this.fasterStepK = 1
+  }
+
   setScared() {
     this.scared = true
+    this.startScaredMs = millis
+  }
+  unscare() {
+    this.scared = false
     this.startScaredMs = millis
   }
     
@@ -84,6 +94,8 @@ class Monster {
   spawnAt(rx, ry) {
     this.setXY(rx, ry)
     this.scared = false
+    this.isDefeated = false
+    this.fasterStepK = this.fasterStepKInit
     this.startScaredMs = 0
     this.setXY(rx, ry)
     console.log(`[New Spawn] x=${Math.round(this.x)}, y=${Math.round(this.y)}`)
@@ -186,6 +198,13 @@ class WingsEyes extends Monster {
     this.damagePerHit = 1
   }
 
+  static withExtraSpeed() {
+    const it = new WingsEyes()
+    it.shakeK = 5
+    it.stepK = 2
+    return it
+  }
+
   getInitialLocation() {
     let rx,ry
     switch (randint(2, 3)) {
@@ -205,27 +224,53 @@ class WingsEyes extends Monster {
 class PanzerEyes extends Monster {
   constructor() {
     super(panzerEyesImage, panzerEyesBoxCollision.copy())
-    this.fasterStepK = 1.5
+    this.fasterStepKInit = 1.5
+    this.fasterStepK = this.fasterStepKInit
     this.stepK = 15
-    this.shakeK = 10
+    this.shakeKInit = 10
+    this.shakeK = this.shakeKInit
     this.beforeScare = 0 
+    this.toScareNeeds = 3
     this.widthFactor  = 256 * 0.3 / 600
     this.heightFactor = 225 * 0.3 / 600
     this.damageDelayMs = 3000
     this.damagePerHit = 10
   }
+  static summon() { 
+    return new PanzerEyes()
+  }
+  withArmor40() {
+    this.toScareNeeds = 7
+    this.widthFactor  = 256 * 0.4 / 600
+    this.heightFactor = 225 * 0.4 / 600
+    this.fasterStepKInit = 50
+    this.fasterStepK = 50
+    return this
+  }
+  bigger() {
+    this.toScareNeeds = 20
+    this.stepK = 20
+    this.widthFactor  = 256 * 0.6 / 600
+    this.heightFactor = 225 * 0.6 / 600
+    this.fasterStepKInit = 100
+    this.fasterStepK = 100
+    return this
+  }
   getInitialLocation() {
     let rx = randint(-0.1*CANVAS_WIDTH - this.width, 1.1*CANVAS_WIDTH) 
-    let ry = randint(-0.7*CANVAS_HEIGHT - this.height, -0.1*CANVAS_HEIGHT - this.height)
+    let ry = randint(-0.9*CANVAS_HEIGHT - this.height, -0.3*CANVAS_HEIGHT - this.height)
     return [rx, ry]
   }
   setScared() {
-    if (++this.beforeScare < 3)
-      return
+    if (++this.beforeScare < this.toScareNeeds) {
+      this.shakeK = map(this.beforeScare, 0, this.toScareNeeds, this.shakeKInit, 0.3)
+      return 
+    }
     super.setScared()
   }
   spawnAt(rx, ry) {
     this.beforeScare = 0 
+    this.shakeK = this.shakeKInit
     return super.spawnAt(rx, ry)
   }
 }
