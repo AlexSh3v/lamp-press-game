@@ -102,9 +102,8 @@ class Monster {
   }
 
   isVisible() {
-    let inX = 0 <= this.x && this.x <= CANVAS_WIDTH
-    let inY = 0 <= this.y && this.y <= CANVAS_HEIGHT
-    return inX && inY
+    const c = new BoxCollision(0, 0, 1, 1)
+    return areRectanglesIntercept(c, this.boxCollision)
   }
 
   setXY(newX, newY) {
@@ -133,10 +132,10 @@ class Monster {
     const vx = dx / distance;
     const vy = dy / distance;
 
-    const step = (faster ? deltaTime / this.fasterStepK : deltaTime / this.stepK)
+    const step = (faster ? deltaTime / this.fasterStepK : deltaTime / this.stepK) * CANVAS_WIDTH / 600
 
-    const stepX = vx * step;
-    const stepY = vy * step;
+    var stepX = vx * step;
+    var stepY = vy * step;
 
     // Shake it up, tonight! Shake it up, all night! 
     var shakeX, shakeY;
@@ -145,13 +144,17 @@ class Monster {
       // YOU THINK COSs AMD SINs ARE USELESS!?
       shakeX = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * cos(randbool() ? a - PI / 2 : a + PI / 2)
       shakeY = deltaTime / this.shakeK * (deltaTime/randint(15, 20)) * sin(randbool() ? a - PI / 2 : a + PI / 2)
+      shakeX *= CANVAS_WIDTH / 600
+      shakeY *= CANVAS_WIDTH / 600
     } else {
       shakeX = 0
       shakeY = 0
     }
 
-    this.x += stepX + shakeX;
-    this.y += stepY + shakeY;
+    stepX += shakeX
+    stepX += shakeY
+    this.x += deadEye.isActivated? stepX * 0.05 : stepX;
+    this.y += deadEye.isActivated? stepY * 0.05 : stepY;
 
     // evilY = evilY - randint(1,3) + 1.1*sin(randfloat(0, 3.14));
     // evilX = evilX + randint(1,2) - 1.1*cos(randfloat(-1.57, 1.57));

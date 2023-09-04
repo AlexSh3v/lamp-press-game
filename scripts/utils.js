@@ -114,3 +114,17 @@ function dynamicFont(v) {
   // x - 700
   textSize(CANVAS_SIZE * v / 600)
 }
+
+function getDynamicColorArray(vFrom0to100, startColorRgbArr, endColorRgbArr) {
+  let start_color = startColorRgbArr
+  end_color = endColorRgbArr
+  
+  // Calculate the color values based on the linear interpolation formula
+  let v = vFrom0to100
+  r = int(start_color[0] - ((start_color[0] - end_color[0]) * v / 100))
+  g = int(start_color[1] - ((start_color[1] - end_color[1]) * v / 100))
+  b = int(start_color[2] - ((start_color[2] - end_color[2]) * v / 100))
+  
+  // Convert the RGB color values to hexadecimal format
+  return [r,g,b]
+}

@@ -3,7 +3,7 @@ var isGameOver = false
 var isLight = true;
 var isPaused = false;
 var isLampClickedWhenMonsterNearby = false
-var multiCursor;
+var multiCursor, deadEye;
 var CANVAS_SIZE = 600;
 var CANVAS_WIDTH = CANVAS_SIZE;
 var CANVAS_HEIGHT = CANVAS_SIZE;
@@ -19,6 +19,7 @@ const DARK_RED = [232, 0, 0] // #e80000
 let DEBUG = false
 let cursorWhite, cursorBlack, cursorDeadEye;
 let perkCursorsWhite, perkCursorsBlack;
+let perkDeadEyeWhite, perkDeadEyeBlack;
 let lamp;
 let lampWhiteImage;
 let lampDarkImage;
@@ -48,7 +49,7 @@ let barGroup;
 let healthBar;
 let heatBar;
 let solarPanelChargeBar;
-let multicursorBar;
+let multicursorBar, deadEyeBar;
 
 let performedClicks = 0;
 let freezeClicks = false;
@@ -85,6 +86,8 @@ function preload() {
   perkCursorsBlack = loadImage('assets/ui/perk_multicursor_black.png')
   cursorWhite = loadImage('assets/ui/cursor_white.png')
   cursorBlack = loadImage('assets/ui/cursor_black.png')
+  perkDeadEyeWhite = loadImage('assets/ui/dead_eye_white.png')
+  perkDeadEyeBlack = loadImage('assets/ui/dead_eye_black.png')
   // fingerprintBlackImage = loadImage('assets/pics/fingerprint_black.png' )
   // fingerprintWhiteImage = loadImage('assets/pics/fingerprint_white.png')
 
@@ -111,7 +114,10 @@ function isMobileDevice() {
 function setup() {
   onLightChangeCallbacks.push((theme) => {
     // cursor(isLight? 'assets/pics/fingerprint_black.png' : 'assets/pics/fingerprint_white.png', 32*441/827, 32*512/827)
-    cursor(isLight? 'assets/ui/cursor_black.png' : 'assets/ui/cursor_white.png')
+    if (isLight) 
+      deadEye.isActivated = false
+    if (!deadEye.isActivated)
+      cursor(isLight? 'assets/ui/cursor_black.png' : 'assets/ui/cursor_white.png')
   })
   
   adaptForScreen((w, h) => { createCanvas(w, h) })
@@ -119,7 +125,8 @@ function setup() {
   frameRate(60);
   pixelDensity(2)
   multiCursor = new Multicursor()
-  level = new Level12();
+  deadEye = new DeadEye()
+  level = new Level1(); 
   healthBar = new StatusBar()
   heatBar = new StatusBar()
   heatBar.value = 0
@@ -128,21 +135,46 @@ function setup() {
   solarPanelChargeBar.color = [0, 102, 255] // #0066ff
   solarPanelChargeBar.value = 0
   multicursorBar = new StatusBar()
+  multicursorBar.doTintAsColor = true
   multicursorBar.threshold = 25
   multicursorBar.value = 0
   multicursorBar.boxCollision = new BoxCollision()
   multicursorBar.boxCollision.onClick = () => {
+    if (deadEye.isActivated) {
+      deadEye.isActivated = false
+    }
     if (multicursorBar.value > multicursorBar.threshold || multiCursor.isActivated)
       multiCursor.isActivated = !multiCursor.isActivated
   } 
+
+  deadEyeBar = new StatusBar()
+  deadEyeBar.doTintAsColor = true
+  deadEyeBar.threshold = 25
+  deadEyeBar.value = 0
+  deadEyeBar.boxCollision = new BoxCollision()
+  deadEyeBar.boxCollision.onClick = () => {
+    if (multiCursor.isActivated) {
+      multiCursor.isActivated = false
+    }
+    if (deadEyeBar.value > deadEyeBar.threshold || deadEye.isActivated)
+      deadEye.isActivated = !deadEye.isActivated
+    if (deadEye.isActivated)
+      cursor('assets/pics/cursor_dead_eye.png')
+    else callOnLightChangeCallbacks()
+
+    // if (deadEyeBar.value > deadEyeBar.threshold || deadEye.isActivated)
+    //   deadEye.isActivated = !deadEye.isActivated
+  } 
+
   barGroup = new BarGroup(
     0.05, 0.95,
-    [healthBar, heatBar, solarPanelChargeBar, multicursorBar],
+    [healthBar, heatBar, solarPanelChargeBar, multicursorBar, deadEyeBar],
     [
       Mob.dico(heartBlackImage, heartWhiteImage), 
       Mob.dico(thermometorBlack, thermometorWhite), 
       Mob.dico(solarPanelBlackImage, solarPanelWhiteImage),
-      Mob.dico(perkCursorsBlack, perkCursorsWhite)
+      Mob.dico(perkCursorsBlack, perkCursorsWhite),
+      Mob.dico(perkDeadEyeBlack, perkDeadEyeWhite)
     ]
   )
 
@@ -176,6 +208,8 @@ function setupOnClicks() {
 
 function drawGameOver() {
   if (solarPanelChargeBar.value == 100) {
+    deadEye.safeDisable()
+    multiCursor.safeDisable()
     background(0,0,0, 150)
     push()
     fill(255)
@@ -211,6 +245,8 @@ function drawGameOver() {
   }
 
   if (healthBar.value == 0) {
+    deadEye.isActivated = false
+    multiCursor.isActivated = false
     background(0,0,0, 150)
     push()
     fill(255)
@@ -297,9 +333,10 @@ function drawMainUI() {
   // noStroke()
   // circle(mouseX, mouseY, 50)
   // pop()
-  if (multiCursor.isActivated) {
-    multiCursor.draw()
-  }
+  multiCursor.draw()
+
+  // Dead Screen Effect
+  deadEye.drawEffect()
   
   // TODO: use image instead of cursor
   // image(
@@ -311,15 +348,17 @@ function drawMainUI() {
 function updatePositions() {
     // Movement of monsters
     let isHitting = false
+    let numberOfVisible = 0
     level.onMonsters((monster) => {
+      if (monster.isVisible())
+        numberOfVisible++
       if (!isLight) {
-        if (monster.scared && millis - monster.startScaredMs < monster.durationScaredMs) {
+        if (monster.scared && monster.isVisible()) {
           monster.goBack(true, true)
         } else {
           if (monster.scared && !monster.isVisible()) {
             return spawnIt(monster)
           }
-          monster.scared = false
           monster.moveTo(
             damageRangeCircle.x - monster.width/2, 
             damageRangeCircle.y - monster.height/2
@@ -346,6 +385,19 @@ function updatePositions() {
     multicursorBar.color = [75,75,75] // #4b4b4b
   else
     multicursorBar.color = isLight? [0,0,0] : [255,255,255] // #fff
+
+  // Actions on `DeadEye` ability
+  if (deadEye.isActivated) {
+    deadEyeBar.decreasePerFrame(true)
+    if (deadEyeBar.value == 0) {
+      deadEye.isActivated = false
+      callOnLightChangeCallbacks()
+    }
+  }
+  if (!deadEye.isActivated && deadEyeBar.value <= deadEyeBar.threshold)  
+    deadEyeBar.color = [75,75,75] // #4b4b4b
+  else
+    deadEyeBar.color = isLight? [0,0,0] : [255,255,255] // #fff
 
   // Disable freezing when time is over
   if (freezeClicks && freezingTime >= FREEZE_DURATION_MS) {
@@ -448,6 +500,7 @@ function debug() {
   pop()
   lampHitLightBoxCollision.draw()
   multicursorBar.boxCollision.draw()
+  deadEyeBar.boxCollision.draw()
   level.onMonsters((monster) => {
     monster.boxCollision.draw([255, 0, 0])
   });
@@ -512,6 +565,8 @@ function switchMode(force = false) {
   callOnLightChangeCallbacks(isLight)
 
   if (isLight) {
+    deadEye.safeDisable()
+    multiCursor.safeDisable()
     level.onMonsters((monster) => {
       monster.scared = true
     })
@@ -549,12 +604,16 @@ function mousePressed() {
       console.log("MONSTER GO AWAY !!");
       monster.boxCollision.onClick()
       monster.setScared()
-      if (monster.scared) {
-        if (!isInterceptingMulticursor) {
-          if (monster instanceof PanzerEyes)
+      if (monster.scared && !monster.isDefeated) {
+        if (!isInterceptingMulticursor && !deadEye.isActivated && !multiCursor.isActivated) {
+          if (monster instanceof PanzerEyes) {
             multicursorBar.increase(3)
-          else 
+            deadEyeBar.increase(0.5)
+          }
+          else {
             multicursorBar.increase()
+            deadEyeBar.increase(0.1)
+          }
         }
         monster.setDefeat()
       }
@@ -615,6 +674,8 @@ function mouseClicked() {
     // return;
   }
 
+  if (deadEyeBar.boxCollision.hasCollision(mouseX, mouseY))
+    deadEyeBar.boxCollision.onClick()
 
   if (multicursorBar.boxCollision.hasCollision(mouseX, mouseY))
     multicursorBar.boxCollision.onClick()
@@ -655,7 +716,9 @@ function windowResized() {
 }
 
 function callOnLightChangeCallbacks(v) {
-  isLight = v
+  if (v !== undefined)
+    isLight = v
+  else v = isLight
   onLightChangeCallbacks.forEach(callback => { callback(v) });
 }
 

@@ -34,6 +34,9 @@ class BarGroup {
       icoMob.width = this.icoSize
       icoMob.height = this.icoSize
       icoMob.setXY(x, y)
+      if (bar.doTintAsColor && !isLight)
+        tint(bar.color[0], bar.color[1], bar.color[2])
+      else noTint()
       icoMob.draw()
 
       // Draw Arc around ico
@@ -82,6 +85,7 @@ class StatusBar {
     this.lastValue = 0;
     this.isReachedMaximum = false
     this.threshold = 0
+    this.doTintAsColor = false
 
     // k for constant decreasing/increasing per frame
     // the bigger the value k the slower increse
@@ -113,23 +117,23 @@ class StatusBar {
   increasePerFrame() {
     // increase value depending on time between frames
     // it does not care about fps -- all the same
-    this.value = Math.min(100, this.value + deltaTime / this.k)
+    const spec = deadEye.isActivated? 0.05 : 1
+    this.value = Math.min(100, this.value + deltaTime / this.k * spec)
     if (this.value == 100 && this.threshold != 0) {
       this.isReachedMaximum = true
     }
   }
-  decreasePerFrame() {
+  decreasePerFrame(bypassDeadEye) {
     // decrease value depending on time between frames
     // it does not care about fps -- all the same
-    this.value = Math.max(0, this.value - deltaTime / this.k)
+    var spec = 0.5;
+    if (bypassDeadEye === undefined)
+      spec = deadEye.isActivated? 0.05 : 1
+    this.value = Math.max(0, this.value - deltaTime / this.k * spec)
 
     if (this.isReachedMaximum && this.value < this.threshold) {
       this.isReachedMaximum = false
     }
-  }
-
-  get_percentage() {
-    return this.value / 100
   }
 
   draw() {
