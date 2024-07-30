@@ -20,3 +20,8 @@ Written with **JavaScript + HTML + CSS**.
 
 Libraries used:
 - [**p5.js**](https://p5js.org/)
+
+**HOW TO RUN?**
+1. Clone project.
+2. Run LiveServer.
+3. Locate `localhost:5500` in browser.
